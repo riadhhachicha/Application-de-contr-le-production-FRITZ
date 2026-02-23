@@ -1,0 +1,3656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRITZ Production Control — v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700;900&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090d;
+  --bg2: #0c0f16;
+  --bg3: #111620;
+  --panel: #0e1219;
+  --border: #1a2535;
+  --border2: #253347;
+  --accent: #ff6b1a;
+  --accent-dim: rgba(255,107,26,0.12);
+  --accent2: #00c9ff;
+  --accent2-dim: rgba(0,201,255,0.08);
+  --green: #00e676;
+  --red: #ff3d3d;
+  --yellow: #ffd600;
+  --purple: #a855f7;
+  --text: #c8d6e5;
+  --text2: #5a7a99;
+  --text3: #8fa8c4;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Barlow', sans-serif;
+  --cond: 'Barlow Condensed', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================
+   SCROLLBAR
+   ============================ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--border); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent2); }
+
+/* ============================
+   HEADER
+   ============================ */
+header {
+  background: var(--panel);
+  border-bottom: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 58px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 4px 40px rgba(255,107,26,0.08);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-hex {
+  width: 38px; height: 38px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond);
+  font-size: 16px; font-weight: 900; color: var(--text);
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: var(--cond);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 4px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.logo-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-clock {
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: 2px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,230,118,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(0,230,118,0); }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 1px;
+}
+
+.alert-bell {
+  position: relative;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.alert-bell-count {
+  position: absolute;
+  top: -4px; right: -6px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 9px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: blink-count 1s infinite;
+}
+
+@keyframes blink-count {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 24px; height: 24px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond);
+  font-size: 10px; font-weight: 900; color: var(--accent);
+}
+
+.user-name {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+}
+
+/* ============================
+   NAV
+   ============================ */
+nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  position: sticky;
+  top: 58px;
+  z-index: 100;
+}
+
+nav::-webkit-scrollbar { height: 2px; }
+
+.nav-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  position: relative;
+  z-index: 10;
+  color: var(--text2);
+  font-family: var(--cond);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 13px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-btn .nav-icon { font-size: 14px; pointer-events: none; }
+
+.nav-badge {
+  pointer-events: none;
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-family: var(--mono);
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-left: 2px;
+}
+
+/* ============================
+   LAYOUT
+   ============================ */
+.main-content {
+  padding: 24px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fade-in 0.2s ease; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================
+   SECTION TITLE
+   ============================ */
+.section-title {
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--text2);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ============================
+   KPI BAR
+   ============================ */
+.kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  padding: 14px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 50px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.01));
+}
+
+.kpi.ok { border-left-color: var(--green); }
+.kpi.warn { border-left-color: var(--yellow); }
+.kpi.danger { border-left-color: var(--red); animation: kpi-blink 1.2s infinite; }
+
+@keyframes kpi-blink {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,61,61,0); }
+  50% { box-shadow: 0 0 0 1px rgba(255,61,61,0.3); }
+}
+
+.kpi-icon {
+  font-size: 18px;
+  position: absolute;
+  top: 12px; right: 14px;
+  opacity: 0.25;
+}
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--text2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-family: var(--cond);
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+}
+
+.kpi-unit {
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 400;
+}
+
+.kpi-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  margin-top: 5px;
+}
+
+/* ============================
+   PANELS
+   ============================ */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.panel-title {
+  font-family: var(--cond);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+
+.panel-body { padding: 18px; }
+.panel-body-sm { padding: 12px 18px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+
+/* ============================
+   FORMS
+   ============================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+input, select, textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  -webkit-appearance: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent2);
+  background: rgba(0,201,255,0.03);
+}
+
+input[readonly] { cursor: default; background: var(--bg2); }
+select option { background: var(--bg2); color: var(--text); }
+textarea { resize: vertical; min-height: 68px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+
+/* ============================
+   BUTTONS
+   ============================ */
+.btn {
+  font-family: var(--cond);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #ff8040; box-shadow: 0 0 24px rgba(255,107,26,0.35); }
+
+.btn-sec {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+.btn-sec:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.btn-success {
+  background: rgba(0,230,118,0.15);
+  border: 1px solid rgba(0,230,118,0.3);
+  color: var(--green);
+}
+.btn-success:hover { background: rgba(0,230,118,0.25); }
+
+.btn-danger { background: var(--red); color: #fff; }
+
+.btn-sm {
+  font-size: 11px;
+  padding: 6px 14px;
+  letter-spacing: 1px;
+}
+
+/* ============================
+   BADGES
+   ============================ */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+}
+
+.badge-ok { background: rgba(0,135,90,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.25); }
+.badge-warn { background: rgba(193,127,0,0.1); color: var(--yellow); border: 1px solid rgba(255,214,0,0.25); }
+.badge-danger { background: rgba(211,47,47,0.1); color: var(--red); border: 1px solid rgba(255,61,61,0.25); }
+.badge-blue { background: rgba(0,119,182,0.08); color: var(--accent2); border: 1px solid rgba(0,201,255,0.2); }
+.badge-orange { background: rgba(255,107,26,0.1); color: var(--accent); border: 1px solid rgba(255,107,26,0.25); }
+.badge-purple { background: rgba(168,85,247,0.1); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+
+/* ============================
+   TABLE
+   ============================ */
+table { width: 100%; border-collapse: collapse; }
+
+th {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  color: var(--text2);
+  text-transform: uppercase;
+  text-align: left;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  white-space: nowrap;
+}
+
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(26,37,53,0.6);
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+
+tr:hover td { background: rgba(255,107,26,0.03); }
+
+/* ============================
+   STATION GRID
+   ============================ */
+.station-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.station-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 14px;
+  cursor: default;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.station-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.station-card.ok::before { background: var(--green); }
+.station-card.warn::before { background: var(--yellow); }
+.station-card.crit::before { background: var(--red); animation: sc-pulse 1s infinite; }
+.station-card.idle::before { background: var(--text2); }
+
+@keyframes sc-pulse {
+  0%,100% { opacity: 1; box-shadow: 0 0 8px rgba(255,61,61,0.8); }
+  50% { opacity: 0.4; }
+}
+
+.station-card.crit {
+  border-color: rgba(255,61,61,0.35);
+  box-shadow: 0 0 20px rgba(255,61,61,0.1);
+}
+
+.station-name {
+  font-family: var(--cond);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.station-temp {
+  font-family: var(--cond);
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.station-temp.ok { color: var(--green); }
+.station-temp.warn { color: var(--yellow); }
+.station-temp.crit { color: var(--red); }
+.station-temp.idle { color: var(--text2); }
+
+.station-meta {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+.station-op {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent2);
+  margin-top: 8px;
+}
+
+.station-progress {
+  margin-top: 8px;
+}
+
+.progress-track {
+  background: var(--bg);
+  height: 4px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.6s ease;
+}
+
+.station-alert-tag {
+  margin-top: 8px;
+  background: rgba(255,61,61,0.1);
+  border-left: 2px solid var(--red);
+  padding: 5px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--red);
+}
+
+/* ============================
+   PROCESS FLOW
+   ============================ */
+.process-flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 16px 0;
+}
+
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.flow-dot {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  border: 2px solid var(--border);
+  background: var(--bg3);
+  transition: all 0.2s;
+  position: relative;
+}
+
+.flow-dot.ok { border-color: var(--green); box-shadow: 0 0 12px rgba(0,230,118,0.2); }
+.flow-dot.warn { border-color: var(--yellow); box-shadow: 0 0 12px rgba(255,214,0,0.2); }
+.flow-dot.crit { border-color: var(--red); box-shadow: 0 0 12px rgba(255,61,61,0.3); animation: flow-pulse 1s infinite; }
+.flow-dot.idle { border-color: var(--border); opacity: 0.6; }
+
+@keyframes flow-pulse {
+  0%,100% { box-shadow: 0 0 12px rgba(255,61,61,0.5); }
+  50% { box-shadow: 0 0 24px rgba(255,61,61,0.8); }
+}
+
+.flow-dot .status-pin {
+  position: absolute;
+  top: -3px; right: -3px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+.flow-dot.ok .status-pin { background: var(--green); }
+.flow-dot.warn .status-pin { background: var(--yellow); }
+.flow-dot.crit .status-pin { background: var(--red); }
+
+.flow-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text2);
+  margin-top: 6px;
+  text-align: center;
+  width: 60px;
+  letter-spacing: 0.3px;
+}
+
+.flow-connector {
+  width: 28px;
+  height: 2px;
+  background: var(--border);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.flow-connector.active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--green), transparent);
+  animation: flow-anim 1.5s infinite;
+}
+
+@keyframes flow-anim {
+  0% { transform: scaleX(0); transform-origin: left; }
+  50% { transform: scaleX(1); transform-origin: left; }
+  50.001% { transform: scaleX(1); transform-origin: right; }
+  100% { transform: scaleX(0); transform-origin: right; }
+}
+
+/* ============================
+   ALERTS
+   ============================ */
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 16px;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid rgba(26,37,53,0.5);
+  transition: background 0.2s;
+}
+
+.alert-item:hover { background: rgba(255,107,26,0.02); }
+.alert-item.critical { border-left-color: var(--red); }
+.alert-item.warning { border-left-color: var(--yellow); }
+.alert-item.info { border-left-color: var(--accent2); }
+.alert-item.acked { opacity: 0.35; border-left-color: var(--border); }
+
+.alert-icon { font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+
+.alert-body { flex: 1; min-width: 0; }
+
+.alert-title {
+  font-family: var(--cond);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.alert-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.alert-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  flex-shrink: 0;
+}
+
+.alert-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ============================
+   RENDEMENT BARS
+   ============================ */
+.rend-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.rend-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  width: 130px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rend-track {
+  flex: 1;
+  background: var(--bg);
+  height: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rend-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+.rend-target {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0.7;
+}
+
+.rend-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ============================
+   OPERATOR CARDS
+   ============================ */
+.op-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.2s;
+}
+
+.op-card:hover { border-color: var(--border); }
+
+.op-avatar {
+  width: 42px; height: 42px;
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond);
+  font-size: 16px; font-weight: 900; color: var(--text);
+  flex-shrink: 0;
+}
+
+.op-name { font-family: var(--cond); font-size: 15px; font-weight: 700; color: var(--text); }
+.op-role { font-family: var(--mono); font-size: 9.5px; color: var(--text2); margin-top: 2px; }
+.op-station { font-family: var(--mono); font-size: 10px; color: var(--accent2); margin-top: 3px; }
+.op-stats { font-family: var(--mono); font-size: 9px; color: var(--text2); margin-top: 2px; }
+
+/* ============================
+   CAMERA / QUALITY
+   ============================ */
+.camera-zone {
+  background: #f0f2f5;
+  border: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  gap: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-zone:hover { border-color: var(--accent2); }
+
+.camera-zone canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;
+}
+
+.camera-zone video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.camera-icon { font-size: 48px; opacity: 0.2; }
+.camera-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.color-panel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.color-swatch {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+}
+
+.score-ring {
+  width: 90px; height: 90px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.score-ring svg { transform: rotate(-90deg); }
+
+.score-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-family: var(--cond);
+  font-size: 22px;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1;
+}
+
+.score-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  text-align: center;
+  margin-top: 2px;
+  color: var(--text2);
+}
+
+.reco-box {
+  border-left: 3px solid var(--accent);
+  background: rgba(255,107,26,0.06);
+  padding: 12px 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+.hsv-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+}
+
+.hsv-track {
+  height: 8px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hsv-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+/* ============================
+   CHARTS — SVG
+   ============================ */
+.chart-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================
+   TOAST
+   ============================ */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: #e0e8f0;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--red);
+  color: var(--text);
+  padding: 12px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  max-width: 340px;
+  animation: toast-in 0.3s ease;
+  pointer-events: auto;
+  line-height: 1.5;
+}
+
+.toast.ok-toast { border-left-color: var(--green); background: #e6f4ed; }
+.toast.warn-toast { border-left-color: var(--yellow); background: #fff8e1; }
+
+@keyframes toast-in {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(120%); opacity: 0; }
+}
+
+/* ============================
+   MODAL
+   ============================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 24px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-in 0.25s ease;
+}
+
+@keyframes modal-in {
+  from { transform: scale(0.95) translateY(-10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-title {
+  font-family: var(--cond);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #fff;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover { color: #fff; }
+
+/* ============================
+   MISC
+   ============================ */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(26,37,53,0.4);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-label { color: var(--text2); }
+.info-val { color: var(--text); }
+
+.haccp-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.haccp-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.haccp-icon { font-size: 16px; flex-shrink: 0; }
+.haccp-name { font-family: var(--cond); font-size: 13px; font-weight: 700; color: #fff; flex: 1; }
+.haccp-val { font-family: var(--mono); font-size: 12px; }
+.haccp-val.ok { color: var(--green); }
+.haccp-val.warn { color: var(--yellow); }
+.haccp-val.danger { color: var(--red); }
+.haccp-limit { font-family: var(--mono); font-size: 9px; color: var(--text2); margin-top: 1px; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.empty-state .empty-icon { font-size: 36px; opacity: 0.3; margin-bottom: 12px; }
+
+/* ============================
+   DASHBOARD CHARTS
+   ============================ */
+.mini-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+  margin-top: 8px;
+}
+
+.spark-bar {
+  flex: 1;
+  background: var(--border);
+  transition: background 0.3s;
+  border-radius: 1px;
+}
+
+/* ============================
+   REPORT / EXPORT
+   ============================ */
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+@media (max-width: 1024px) {
+  .grid-3, .form-row-3, .form-row-4 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4, .form-row, .form-row-3, .form-row-4 { grid-template-columns: 1fr; }
+  .kpi-bar { grid-template-columns: 1fr 1fr; }
+  .color-panel { grid-template-columns: 1fr; }
+  .header-center { display: none; }
+  .main-content { padding: 16px; }
+  nav button { padding: 13px 10px; font-size: 12px; }
+  .nav-icon { display: none; }
+}
+
+/* ============================
+   OPERATOR LOGIN CARDS
+   ============================ */
+.op-login-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-top: 3px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.op-login-card:hover {
+  border-color: var(--accent);
+  border-top-color: var(--accent);
+  background: rgba(255,107,26,0.05);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(224,90,16,0.12);
+}
+
+.op-login-dir {
+  border-top-color: var(--accent);
+}
+
+.op-login-avatar {
+  width: 56px; height: 56px;
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond);
+  font-size: 20px; font-weight: 900; color: #fff;
+  margin-bottom: 4px;
+}
+
+.op-login-name {
+  font-family: var(--cond);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--text);
+}
+
+.op-login-role {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 1px;
+}
+
+.op-login-arrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+/* Station picker buttons */
+.station-btn {
+  background: #f8fafb;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.station-btn:hover {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+
+.station-btn.selected {
+  border-color: var(--accent);
+  background: rgba(224,90,16,0.08);
+  color: var(--accent);
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header>
+  <div class="logo">
+    <div class="logo-hex">F</div>
+    <div>
+      <div class="logo-text">FRITZ</div>
+      <div class="logo-sub">Production Control v2.0</div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <span>PRODUCTION ACTIVE</span>
+    </div>
+    <div class="header-clock" id="header-clock">--:--:--</div>
+  </div>
+
+  <div class="header-right">
+    <div class="header-date" id="header-date">—</div>
+    <div class="alert-bell" onclick="showPage('alertes')" title="Alertes actives">
+      🔔
+      <div class="alert-bell-count" id="alert-count">2</div>
+    </div>
+    <div class="user-pill">
+      <div class="user-avatar">DR</div>
+      <div class="user-name">DIRECTEUR</div>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== NAV ==================== -->
+<nav id="main-nav">
+  <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">
+    <span class="nav-icon">📊</span> Dashboard
+  </button>
+  <button class="nav-btn" data-page="production" onclick="showPage('production')">
+    <span class="nav-icon">📋</span> Saisie Production
+  </button>
+  <button class="nav-btn" data-page="stations" onclick="showPage('stations')">
+    <span class="nav-icon">⚙️</span> Stations
+  </button>
+  <button class="nav-btn" data-page="rendement" onclick="showPage('rendement')">
+    <span class="nav-icon">📈</span> Rendement
+  </button>
+  <button class="nav-btn" data-page="qualite" onclick="showPage('qualite')">
+    <span class="nav-icon">🎨</span> Qualité
+  </button>
+  <button class="nav-btn" data-page="alertes" onclick="showPage('alertes')">
+    <span class="nav-icon">🚨</span> Alertes <span class="nav-badge" id="nav-alert-badge">2</span>
+  </button>
+  <button class="nav-btn" data-page="operateurs" onclick="showPage('operateurs')">
+    <span class="nav-icon">👷</span> Opérateurs
+  </button>
+  <button class="nav-btn" data-page="haccp" onclick="showPage('haccp')">
+    <span class="nav-icon">📋</span> HACCP
+  </button>
+</nav>
+
+<div class="main-content">
+
+<!-- ==================== DASHBOARD ==================== -->
+<div class="page active" id="page-dashboard">
+
+  <!-- KPIs -->
+  <div class="kpi-bar">
+    <div class="kpi ok">
+      <div class="kpi-icon">🥔</div>
+      <div class="kpi-label">Production Jour</div>
+      <div class="kpi-value" id="kpi-prod">2 847 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-sub">▲ +12% vs hier</div>
+      <div class="mini-sparkline" id="spark-prod"></div>
+    </div>
+    <div class="kpi" id="kpi-rend-card">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-label">Rendement Global</div>
+      <div class="kpi-value" id="kpi-rend">66.4 <span class="kpi-unit">%</span></div>
+      <div class="kpi-sub">Objectif: 66–67%</div>
+      <div class="mini-sparkline" id="spark-rend"></div>
+    </div>
+    <div class="kpi ok">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Lots Traités</div>
+      <div class="kpi-value" id="kpi-lots">14</div>
+      <div class="kpi-sub">Lot actif: #2024-089</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-icon">🛢️</div>
+      <div class="kpi-label">Consomm. Huile</div>
+      <div class="kpi-value">148 <span class="kpi-unit">L</span></div>
+      <div class="kpi-sub">⚠ +8% vs standard</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Coût Matière / kg</div>
+      <div class="kpi-value">2.87 <span class="kpi-unit">DT</span></div>
+      <div class="kpi-sub">Budget: 2.90 DT</div>
+    </div>
+    <div class="kpi danger" id="kpi-alerts-card">
+      <div class="kpi-icon">🚨</div>
+      <div class="kpi-label">Alertes Actives</div>
+      <div class="kpi-value" id="kpi-alerts">2</div>
+      <div class="kpi-sub">→ Voir module alertes</div>
+    </div>
+  </div>
+
+  <!-- Flow diagram -->
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-head">
+      <div class="panel-title">Flux de Production — Temps Réel</div>
+      <span class="badge badge-ok">LOT #2024-089 EN COURS</span>
+    </div>
+    <div class="panel-body-sm">
+      <div class="process-flow" id="process-flow"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Chart rendement -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Rendement — 7 Derniers Jours</div>
+        <span class="badge badge-ok">STABLE</span>
+      </div>
+      <div class="panel-body">
+        <svg width="100%" height="150" viewBox="0 0 400 150" style="overflow:visible">
+          <defs>
+            <linearGradient id="rGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00c9ff" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#00c9ff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="37" x2="400" y2="37" stroke="#1a2535" stroke-width="1"/>
+          <line x1="0" y1="67" x2="400" y2="67" stroke="#1a2535" stroke-width="1"/>
+          <line x1="0" y1="97" x2="400" y2="97" stroke="#1a2535" stroke-width="1"/>
+          <line x1="0" y1="127" x2="400" y2="127" stroke="#1a2535" stroke-width="1"/>
+          <!-- Target 66.5% -->
+          <line x1="0" y1="55" x2="400" y2="55" stroke="#ff6b1a" stroke-width="1.5" stroke-dasharray="5,4"/>
+          <text x="4" y="50" fill="#ff6b1a" font-family="'Share Tech Mono'" font-size="9">66.5% cible</text>
+          <!-- Area fill -->
+          <path d="M0,68 L57,63 L114,74 L171,58 L228,50 L285,61 L342,56 L400,52 L400,150 L0,150 Z"
+                fill="url(#rGrad)" />
+          <!-- Line -->
+          <polyline points="0,68 57,63 114,74 171,58 228,50 285,61 342,56 400,52"
+                    fill="none" stroke="#00c9ff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="0" cy="68" r="3.5" fill="#00c9ff"/>
+          <circle cx="57" cy="63" r="3.5" fill="#00c9ff"/>
+          <circle cx="114" cy="74" r="3.5" fill="#ff6b1a"/>
+          <circle cx="171" cy="58" r="3.5" fill="#00c9ff"/>
+          <circle cx="228" cy="50" r="3.5" fill="#00e676"/>
+          <circle cx="285" cy="61" r="3.5" fill="#00c9ff"/>
+          <circle cx="342" cy="56" r="3.5" fill="#00c9ff"/>
+          <circle cx="400" cy="52" r="3.5" fill="#00e676"/>
+          <text x="0" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">L</text>
+          <text x="50" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">Ma</text>
+          <text x="107" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">Me</text>
+          <text x="164" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">J</text>
+          <text x="221" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">V</text>
+          <text x="278" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">S</text>
+          <text x="335" y="147" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">D</text>
+          <text x="390" y="147" fill="#00e676" font-family="'Share Tech Mono'" font-size="9">A</text>
+          <text x="0" y="68" fill="#00c9ff" font-family="'Share Tech Mono'" font-size="9" dx="4" dy="-4">64.8</text>
+          <text x="228" y="50" fill="#00e676" font-family="'Share Tech Mono'" font-size="9" dx="4" dy="-4">67.1</text>
+          <text x="400" y="52" fill="#00e676" font-family="'Share Tech Mono'" font-size="9" dx="-28" dy="-4">66.4</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Alertes récentes -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Alertes Récentes</div>
+        <span class="badge badge-danger" id="dash-alert-badge">2 ACTIVES</span>
+      </div>
+      <div id="dash-alert-list">
+        <div class="alert-item critical">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-body">
+            <div class="alert-title">Friture — Température Haute</div>
+            <div class="alert-desc">Station FRI-01 → 182°C (seuil: 180°C) | Lot #2024-089</div>
+          </div>
+          <div class="alert-time">09:42</div>
+        </div>
+        <div class="alert-item warning">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-body">
+            <div class="alert-title">Chambre Froide — Dérive</div>
+            <div class="alert-desc">CF-03 → -15.4°C (seuil: -16°C)</div>
+          </div>
+          <div class="alert-time">08:17</div>
+        </div>
+        <div class="alert-item info">
+          <div class="alert-icon">ℹ️</div>
+          <div class="alert-body">
+            <div class="alert-title">Blanchiment — Conformité rétablie</div>
+            <div class="alert-desc">BL-01 → 92.3°C — HACCP OK</div>
+          </div>
+          <div class="alert-time">07:55</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance opérateurs -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Performance Opérateurs — Session Jour</div>
+      <button class="export-btn" onclick="exportCSV()">⬇ CSV</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Opérateur</th>
+            <th>Station</th>
+            <th>Lots traités</th>
+            <th>Rendement moy.</th>
+            <th>Anomalies</th>
+            <th>Temps actif</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="font-family:var(--cond);font-weight:700;color:var(--text)">HELA</span></td>
+            <td><span style="color:var(--accent)">Qualité Process</span></td>
+            <td>7</td>
+            <td><span style="color:var(--green)">67.4%</span></td>
+            <td>1</td>
+            <td>5h 15min</td>
+            <td><span class="badge badge-ok">ACTIVE</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-family:var(--cond);font-weight:700;color:var(--text)">HANENE</span></td>
+            <td><span style="color:var(--accent2)">Hygiéniste</span></td>
+            <td>5</td>
+            <td><span style="color:var(--green)">66.2%</span></td>
+            <td>0</td>
+            <td>5h 00min</td>
+            <td><span class="badge badge-ok">ACTIVE</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-family:var(--cond);font-weight:700;color:var(--text)">AHLEM</span></td>
+            <td><span style="color:var(--green)">Qualité Production</span></td>
+            <td>6</td>
+            <td><span style="color:var(--green)">66.9%</span></td>
+            <td>1</td>
+            <td>4h 45min</td>
+            <td><span class="badge badge-ok">ACTIVE</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-family:var(--cond);font-weight:700;color:var(--accent)">DIRECTEUR</span></td>
+            <td><span style="color:var(--yellow)">Direction</span></td>
+            <td>—</td>
+            <td><span style="color:var(--text2)">—</span></td>
+            <td>—</td>
+            <td>Supervision</td>
+            <td><span class="badge badge-orange">DIRECTION</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<!-- ==================== SAISIE DES DONNÉES DE PRODUCTION ==================== -->
+<div class="page" id="page-production">
+
+  <!-- OPERATOR LOGIN SELECTOR -->
+  <div id="saisie-login-screen" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;">
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="font-size:48px;margin-bottom:14px">🏭</div>
+      <div style="font-family:var(--cond);font-size:28px;font-weight:900;letter-spacing:4px;color:var(--text);margin-bottom:6px">SAISIE PRODUCTION</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:2px">ACCÈS OPÉRATEUR — IDENTIFIEZ-VOUS</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;max-width:700px">
+      <div class="op-login-card" onclick="loginAs('HELA','Qualité Process','#ff6b1a','HB')">
+        <div class="op-login-avatar" style="background:#ff6b1a">HB</div>
+        <div class="op-login-name">HELA</div>
+        <div class="op-login-role">Qualité Process</div>
+        <div class="op-login-arrow">→ SAISIR</div>
+      </div>
+      <div class="op-login-card" onclick="loginAs('HANENE','Hygiéniste','#00c9ff','HS')">
+        <div class="op-login-avatar" style="background:#00c9ff">HS</div>
+        <div class="op-login-name">HANENE</div>
+        <div class="op-login-role">Hygiéniste</div>
+        <div class="op-login-arrow">→ SAISIR</div>
+      </div>
+      <div class="op-login-card" onclick="loginAs('AHLEM','Qualité Production','#00e676','AM')">
+        <div class="op-login-avatar" style="background:#00e676;color:#000">AM</div>
+        <div class="op-login-name">AHLEM</div>
+        <div class="op-login-role">Qualité Production</div>
+        <div class="op-login-arrow">→ SAISIR</div>
+      </div>
+      <div class="op-login-card op-login-dir" onclick="loginAs('DIRECTEUR','Direction','#ff6b1a','DR')">
+        <div class="op-login-avatar" style="background:linear-gradient(135deg,#ff6b1a,#ffaa00)">DR</div>
+        <div class="op-login-name">DIRECTEUR</div>
+        <div class="op-login-role">Accès complet</div>
+        <div class="op-login-arrow">→ SAISIR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAISIE FORM (shown after login) -->
+  <div id="saisie-form-screen" style="display:none">
+
+    <!-- Operator banner -->
+    <div id="op-session-banner" style="display:flex;align-items:center;justify-content:space-between;background:#fff7f3;border:1px solid #f5c4a0;border-left:4px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:12px 18px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div id="banner-avatar" style="width:36px;height:36px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-size:14px;font-weight:900;color:#fff"></div>
+        <div>
+          <div style="font-family:var(--cond);font-size:16px;font-weight:900;color:var(--text)" id="banner-name">—</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent)" id="banner-role">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text2)">Session: <span id="banner-time">—</span></div>
+        <button class="btn btn-sec btn-sm" onclick="logoutOp()">⬅ Changer</button>
+      </div>
+    </div>
+
+    <div class="section-title">Nouvelle Saisie de Données</div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">📋 Saisie des Données de Production</div>
+        <div id="temp-warning-tag" style="display:none">
+          <span class="badge badge-danger">⚠ DÉRIVE TEMP DÉTECTÉE</span>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <!-- ROW 1: Date + Lot -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>📅 Date / Heure</label>
+            <input type="datetime-local" id="prod-date">
+          </div>
+          <div class="form-group">
+            <label>🏷️ Numéro de Lot *</label>
+            <input type="text" id="prod-lot" placeholder="Ex: 2024-089">
+          </div>
+        </div>
+
+        <!-- ROW 2: Station -->
+        <div class="form-group">
+          <label>⚙️ Station de Production *</label>
+          <div id="station-picker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:4px"></div>
+          <input type="hidden" id="prod-station">
+        </div>
+
+        <div id="station-spec-box" style="display:none" class="reco-box" style="margin-bottom:14px;"></div>
+
+        <!-- ROW 3: Quantities -->
+        <div class="form-row-4">
+          <div class="form-group">
+            <label>⬇️ Quantité Entrée (kg) *</label>
+            <input type="number" id="prod-qte-in" placeholder="0.00" step="0.01" oninput="calcRendement()">
+          </div>
+          <div class="form-group">
+            <label>⬆️ Quantité Sortie (kg) *</label>
+            <input type="number" id="prod-qte-out" placeholder="0.00" step="0.01" oninput="calcRendement()">
+          </div>
+          <div class="form-group">
+            <label>📊 Rendement Calculé</label>
+            <input type="text" id="prod-rendement" placeholder="—" readonly style="font-size:16px;font-weight:700;text-align:center">
+          </div>
+          <div class="form-group">
+            <label>⚠️ Perte Matière</label>
+            <input type="text" id="prod-perte" placeholder="—" readonly style="font-size:16px;font-weight:700;text-align:center">
+          </div>
+        </div>
+
+        <!-- ROW 4: Temp + Durée -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>🌡️ Température Mesurée (°C)</label>
+            <input type="number" id="prod-temp" placeholder="0.0" step="0.1" oninput="checkTemp(true)" style="font-size:18px">
+          </div>
+          <div class="form-group">
+            <label>⏱️ Durée (min)</label>
+            <input type="number" id="prod-time" placeholder="0" step="0.5" style="font-size:18px">
+          </div>
+        </div>
+
+        <!-- ===== PARAMÈTRES VITESSE Hz — affichage dynamique selon station ===== -->
+
+        <!-- LAVAGE : convoyeur lavage -->
+        <div id="hz-lavage" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">⚡ PARAMÈTRES VITESSE — LAVAGE</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚡ Convoyeur Lavage (Hz)</label>
+              <input type="number" id="hz-conv-lavage" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TRIE : convoyeur trie -->
+        <div id="hz-trie" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">⚡ PARAMÈTRES VITESSE — TRIE</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚡ Vitesse Convoyeur Trie (Hz)</label>
+              <input type="number" id="hz-conv-trie" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+          </div>
+        </div>
+
+        <!-- BULLE : convoyeur bulle + vibreur -->
+        <div id="hz-bulle" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">⚡ PARAMÈTRES VITESSE — BULLE CONTINUE</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚡ Convoyeur Bulle (Hz)</label>
+              <input type="number" id="hz-conv-bulle" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+            <div class="form-group">
+              <label>⚡ Vibreur après Bulle (Hz)</label>
+              <input type="number" id="hz-vibreur-bulle" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+          </div>
+        </div>
+
+        <!-- BLANCHIMENT : vibreur après blanchiment + convoyeur séchage -->
+        <div id="hz-blanchiment" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">⚡ PARAMÈTRES VITESSE — BLANCHIMENT</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚡ Vibreur après Blanchiment (Hz)</label>
+              <input type="number" id="hz-vibreur-blanchi" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+            <div class="form-group">
+              <label>⚡ Convoyeur Séchage (Hz)</label>
+              <input type="number" id="hz-conv-sechage" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+          </div>
+        </div>
+
+        <!-- FRITURE : vitesse friture + convoyeur ventilation -->
+        <div id="hz-friture" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">⚡ PARAMÈTRES VITESSE — FRITURE</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚡ Vitesse Friture (Hz)</label>
+              <input type="number" id="hz-friture-vitesse" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+            <div class="form-group">
+              <label>⚡ Convoyeur Ventilation (Hz)</label>
+              <input type="number" id="hz-conv-ventil" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+          </div>
+          <!-- Huile friture -->
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">🛢️ PARAMÈTRES HUILE</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>🛢️ Consommation Huile (L)</label>
+              <input type="number" id="prod-huile" placeholder="0.0" step="0.5">
+            </div>
+            <div class="form-group">
+              <label>🧪 Acidité Huile (%)</label>
+              <input type="number" id="prod-acidite" placeholder="0.00" step="0.01">
+            </div>
+          </div>
+        </div>
+
+        <!-- VENTILATION : convoyeur ventilation seul -->
+        <div id="hz-ventilation" style="display:none">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">⚡ PARAMÈTRES VITESSE — VENTILATION</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚡ Convoyeur Ventilation (Hz)</label>
+              <input type="number" id="hz-conv-ventil2" placeholder="0.0" step="0.1" min="0" max="60" style="font-size:16px">
+            </div>
+          </div>
+        </div>
+
+        <!-- Observations -->
+        <div class="form-group">
+          <label>📝 Observations / Remarques</label>
+          <textarea id="prod-obs" placeholder="Notes qualité, incidents, actions correctives, paramètres particuliers..." style="min-height:80px"></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" onclick="saveLog()" style="font-size:15px;padding:13px 28px">
+            💾 ENREGISTRER SAISIE
+          </button>
+          <button class="btn btn-sec" onclick="clearForm()">✕ Effacer</button>
+          <button class="export-btn" onclick="exportCSV()" style="margin-left:auto">⬇ Export CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journal du jour -->
+    <div class="section-title">Journal du Jour</div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title" id="journal-lot-title">Journal — Lot #2024-089</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge badge-blue" id="journal-entry-count">4 entrées</span>
+          <button class="export-btn btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Heure</th>
+              <th>Lot</th>
+              <th>Station</th>
+              <th>Entrée kg</th>
+              <th>Sortie kg</th>
+              <th>Rendement</th>
+              <th>Perte %</th>
+              <th>Temp °C</th>
+              <th>Durée</th>
+              <th>Vitesses Hz</th>
+              <th>Opérateur</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="prod-tbody">
+            <tr>
+              <td>07:00</td><td>2024-089</td><td>📦 Réception MP</td>
+              <td>500.0</td><td>497.2</td>
+              <td><span style="color:var(--green)">99.4%</span></td>
+              <td><span style="color:var(--green)">0.6%</span></td>
+              <td>12°C</td><td>—</td><td style="color:var(--text2);font-size:10px">—</td><td>AHLEM</td>
+              <td><span class="badge badge-ok">OK</span></td>
+            </tr>
+            <tr>
+              <td>07:30</td><td>2024-089</td><td>🚿 Lavage/Épluchage</td>
+              <td>497.2</td><td>420.0</td>
+              <td><span style="color:var(--green)">84.5%</span></td>
+              <td><span style="color:var(--green)">15.5%</span></td>
+              <td>—</td><td>30 min</td><td style="color:var(--accent2);font-size:10px">Conv.Lavage: 35.0 Hz</td><td>HANENE</td>
+              <td><span class="badge badge-ok">OK</span></td>
+            </tr>
+            <tr>
+              <td>08:05</td><td>2024-089</td><td>♨️ Blanchiment</td>
+              <td>420.0</td><td>418.5</td>
+              <td><span style="color:var(--green)">99.6%</span></td>
+              <td><span style="color:var(--green)">0.4%</span></td>
+              <td>92.3°C</td><td>8 min</td><td style="color:var(--accent2);font-size:10px">Vibreur: 42.0 Hz | Conv.Séchage: 31.0 Hz</td><td>HANENE</td>
+              <td><span class="badge badge-ok">OK</span></td>
+            </tr>
+            <tr>
+              <td>09:30</td><td>2024-089</td><td>🔥 Friture</td>
+              <td>380.0</td><td>340.0</td>
+              <td><span style="color:var(--yellow)">89.5%</span></td>
+              <td><span style="color:var(--yellow)">10.5%</span></td>
+              <td style="color:var(--red)">182°C ⚠</td><td>3 min</td><td style="color:var(--accent2);font-size:10px">Vit.Friture: 25.0 Hz | Conv.Ventil: 38.0 Hz</td><td>HELA</td>
+              <td><span class="badge badge-danger">ALERTE TEMP</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /saisie-form-screen -->
+
+</div><!-- /production -->
+
+<!-- ==================== STATIONS ==================== -->
+<div class="page" id="page-stations">
+
+  <div class="section-title">État Temps Réel des Stations</div>
+  <div class="station-grid" id="station-grid"></div>
+
+</div><!-- /stations -->
+
+<!-- ==================== RENDEMENT ==================== -->
+<div class="page" id="page-rendement">
+
+  <div class="kpi-bar" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+    <div class="kpi ok">
+      <div class="kpi-label">Rendement Global Actuel</div>
+      <div class="kpi-value">66.4 <span class="kpi-unit">%</span></div>
+      <div class="kpi-sub">Objectif: 66–67%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">MP Entrée Aujourd'hui</div>
+      <div class="kpi-value">4 280 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-sub">14 lots × ~305 kg</div>
+    </div>
+    <div class="kpi ok">
+      <div class="kpi-label">Produit Fini</div>
+      <div class="kpi-value">2 842 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-sub">▲ Objectif atteint</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-label">Pertes Totales</div>
+      <div class="kpi-value">1 438 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-sub">33.6% — Normal</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Coût MP / kg Fini</div>
+      <div class="kpi-value">2.87 <span class="kpi-unit">DT</span></div>
+      <div class="kpi-sub">Budget max: 2.90 DT</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Rendement par Station</div>
+        <span class="badge badge-blue">LOT #2024-089</span>
+      </div>
+      <div class="panel-body">
+        <div id="rend-bars"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Analyse Pertes par Étape</div>
+      </div>
+      <div class="panel-body">
+        <svg width="100%" height="200" viewBox="0 0 300 200">
+          <!-- Waterfall chart simplified -->
+          <text x="0" y="12" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="9">MP ENTRÉE → PRODUIT FINI (en kg par lot ~305 kg)</text>
+          <!-- Bars -->
+          <g transform="translate(0,20)">
+            <!-- Reception -->
+            <rect x="0" y="0" width="30" height="135" fill="rgba(0,201,255,0.3)" stroke="#00c9ff" stroke-width="1"/>
+            <text x="15" y="145" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="8" text-anchor="middle">305</text>
+            <text x="15" y="155" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="7" text-anchor="middle">REC</text>
+            <!-- Perte lavage -45kg -->
+            <rect x="35" y="115" width="30" height="20" fill="rgba(255,214,0,0.3)" stroke="#ffd600" stroke-width="1"/>
+            <text x="50" y="145" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="8" text-anchor="middle">-45</text>
+            <text x="50" y="155" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="7" text-anchor="middle">LAV</text>
+            <!-- Post lavage -->
+            <rect x="70" y="15" width="30" height="115" fill="rgba(0,201,255,0.2)" stroke="#00c9ff" stroke-width="1"/>
+            <text x="85" y="145" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="8" text-anchor="middle">260</text>
+            <text x="85" y="155" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="7" text-anchor="middle">POST-L</text>
+            <!-- Perte friture -40kg -->
+            <rect x="105" y="97" width="30" height="18" fill="rgba(255,107,26,0.3)" stroke="#ff6b1a" stroke-width="1"/>
+            <text x="120" y="145" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="8" text-anchor="middle">-40</text>
+            <text x="120" y="155" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="7" text-anchor="middle">FRI</text>
+            <!-- Perte surgel -5kg -->
+            <rect x="140" y="93" width="30" height="4" fill="rgba(0,201,255,0.25)" stroke="#00c9ff" stroke-width="1"/>
+            <text x="155" y="145" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="8" text-anchor="middle">-5</text>
+            <text x="155" y="155" fill="#5a7a99" font-family="'Share Tech Mono'" font-size="7" text-anchor="middle">SURG</text>
+            <!-- Produit fini -->
+            <rect x="175" y="15" width="40" height="78" fill="rgba(0,230,118,0.25)" stroke="#00e676" stroke-width="1.5"/>
+            <text x="195" y="100" fill="#00e676" font-family="'Share Tech Mono'" font-size="9" text-anchor="middle" dy="5">205 kg</text>
+            <text x="195" y="155" fill="#00e676" font-family="'Share Tech Mono'" font-size="8" text-anchor="middle">FINI</text>
+            <text x="195" y="10" fill="#00e676" font-family="'Share Tech Mono'" font-size="10" text-anchor="middle" font-weight="bold">67.2%</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Historique Rendement — 30 Derniers Jours</div>
+      <div style="display:flex;gap:8px">
+        <span class="badge badge-green">Moy: 65.8%</span>
+        <span class="badge badge-orange">Max: 68.1%</span>
+        <span class="badge badge-danger">Min: 61.3%</span>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div id="rend-history-bars" style="display:flex;align-items:flex-end;gap:3px;height:80px;"></div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:8px;display:flex;justify-content:space-between">
+        <span>J-30</span><span>J-20</span><span>J-10</span><span>Aujourd'hui</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulation rendement -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Simulateur Rendement</div>
+    </div>
+    <div class="panel-body">
+      <div class="form-row-3">
+        <div class="form-group">
+          <label>MP Entrée (kg)</label>
+          <input type="number" id="sim-in" placeholder="1000" oninput="simulRendement()">
+        </div>
+        <div class="form-group">
+          <label>Produit Fini (kg)</label>
+          <input type="number" id="sim-out" placeholder="670" oninput="simulRendement()">
+        </div>
+        <div class="form-group">
+          <label>Coût MP / kg (DT)</label>
+          <input type="number" id="sim-cost" placeholder="1.90" step="0.01" oninput="simulRendement()">
+        </div>
+      </div>
+      <div id="sim-result" style="display:none">
+        <div class="grid-3" style="gap:10px">
+          <div style="background:var(--bg3);border:1px solid var(--border);padding:14px;text-align:center">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:6px">RENDEMENT</div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900" id="sim-rend-val">—</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);padding:14px;text-align:center">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:6px">PERTE MATIÈRE</div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900" id="sim-perte-val">—</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);padding:14px;text-align:center">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:6px">COÛT / KG FINI</div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900" id="sim-cost-val">—</div>
+          </div>
+        </div>
+        <div id="sim-advice" class="reco-box" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /rendement -->
+
+<!-- ==================== QUALITE COULEUR ==================== -->
+<div class="page" id="page-qualite">
+
+  <div class="section-title">Contrôle Qualité Couleur</div>
+
+  <div class="grid-2">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Analyse Caméra</div>
+        <span class="badge badge-purple">MODULE ACTIF</span>
+      </div>
+      <div class="panel-body">
+        <div class="camera-zone" id="camera-zone" onclick="triggerCamera()">
+          <video id="camera-video" autoplay playsinline></video>
+          <canvas id="camera-canvas"></canvas>
+          <div id="cam-ui">
+            <div class="camera-icon">📷</div>
+            <div class="camera-label" id="cam-label">
+              Cliquez pour activer la caméra<br>
+              <span style="font-size:9px;opacity:0.5">ou simuler une analyse</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="analyzeColor()">🔍 ANALYSER</button>
+          <button class="btn btn-sec" onclick="simulateCapture()">▶ SIMULER</button>
+          <button class="btn btn-sec btn-sm" onclick="captureFrame()">📸 CAPTURER</button>
+        </div>
+
+        <div style="margin-top:16px" id="color-hsv-panel" style="display:none">
+          <div class="section-title" style="font-size:10px;margin-bottom:10px">PARAMÈTRES HSV</div>
+          <div class="hsv-bar">
+            <span>H</span>
+            <div class="hsv-track" style="background:linear-gradient(90deg,red,yellow,green,cyan,blue,magenta,red)">
+              <div class="hsv-fill" id="hsv-h" style="width:0%;background:rgba(0,0,0,0.3)"></div>
+            </div>
+            <span id="hsv-h-val" style="font-family:var(--mono);font-size:10px;color:var(--text2)">—</span>
+          </div>
+          <div class="hsv-bar">
+            <span>S</span>
+            <div class="hsv-track" style="background:linear-gradient(90deg,#888,#ff6b1a)">
+              <div class="hsv-fill" id="hsv-s" style="width:0%;background:rgba(0,0,0,0.3)"></div>
+            </div>
+            <span id="hsv-s-val" style="font-family:var(--mono);font-size:10px;color:var(--text2)">—</span>
+          </div>
+          <div class="hsv-bar">
+            <span>V</span>
+            <div class="hsv-track" style="background:linear-gradient(90deg,#000,#fff)">
+              <div class="hsv-fill" id="hsv-v" style="width:0%;background:rgba(0,0,0,0.3)"></div>
+            </div>
+            <span id="hsv-v-val" style="font-family:var(--mono);font-size:10px;color:var(--text2)">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Résultat Analyse</div>
+      </div>
+      <div class="panel-body">
+        <div id="qual-empty" class="empty-state">
+          <div class="empty-icon">🎨</div>
+          <div>Lancez une analyse pour voir les résultats</div>
+        </div>
+
+        <div id="qual-result" style="display:none">
+          <div class="color-panel">
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-bottom:6px;text-align:center">ÉCHANTILLON</div>
+              <div class="color-swatch" id="swatch-sample" style="background:#c8891a;color:#000">HSV: 35° 85% 78%</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:24px;color:var(--text2);text-align:center">vs</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-bottom:6px;text-align:center">RÉFÉRENCE FRITZ</div>
+              <div class="color-swatch" style="background:#b5751a;color:#000">HSV: 30° 86% 71%</div>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin:16px 0">
+            <div class="score-ring">
+              <svg width="90" height="90" viewBox="0 0 90 90">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#1a2535" stroke-width="8"/>
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#00c9ff" stroke-width="8"
+                        stroke-dasharray="239" stroke-dashoffset="38" stroke-linecap="round"
+                        id="score-circle"/>
+              </svg>
+              <div class="score-text" id="score-pct" style="color:#00c9ff">84%</div>
+              <div class="score-label">Score qualité</div>
+            </div>
+          </div>
+
+          <div id="qual-reco" class="reco-box">
+            <strong>→ RECOMMANDATION :</strong><br>
+            Couleur légèrement plus dorée que la référence.<br>
+            Suggestion : Réduire le temps de friture de 10–15 secondes.
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="info-row">
+              <span class="info-label">Température friture</span>
+              <span class="info-val">173°C</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Durée friture</span>
+              <span class="info-val">2'45''</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Lot analysé</span>
+              <span class="info-val">#2024-089</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Heure analyse</span>
+              <span class="info-val" id="qual-time">—</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-success btn-sm" onclick="saveQualCheck()">✓ VALIDER & ENREGISTRER</button>
+            <button class="btn btn-sec btn-sm">⬇ RAPPORT PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Historique qualité -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Historique Contrôles Qualité</div>
+      <span class="badge badge-blue" id="qual-count">3 contrôles</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Date/Heure</th>
+            <th>Lot</th>
+            <th>Score</th>
+            <th>H°</th>
+            <th>S%</th>
+            <th>V%</th>
+            <th>Recommandation</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="qual-tbody">
+          <tr>
+            <td>09:45</td><td>#2024-089</td>
+            <td><span style="color:var(--green)">84%</span></td>
+            <td>35°</td><td>85%</td><td>78%</td>
+            <td style="color:var(--text2)">Couleur conforme</td>
+            <td><span class="badge badge-ok">VALIDÉ</span></td>
+          </tr>
+          <tr>
+            <td>08:12</td><td>#2024-088</td>
+            <td><span style="color:var(--yellow)">71%</span></td>
+            <td>42°</td><td>90%</td><td>82%</td>
+            <td style="color:var(--yellow)">↓ Baisser temp friture -5°C</td>
+            <td><span class="badge badge-warn">CORRIGÉ</span></td>
+          </tr>
+          <tr>
+            <td>07:00</td><td>#2024-087</td>
+            <td><span style="color:var(--red)">58%</span></td>
+            <td>25°</td><td>70%</td><td>65%</td>
+            <td style="color:var(--red)">↑ Augmenter temps +20s</td>
+            <td><span class="badge badge-danger">NON-CONF</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /qualite -->
+
+<!-- ==================== ALERTES ==================== -->
+<div class="page" id="page-alertes">
+
+  <div class="kpi-bar" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+    <div class="kpi danger">
+      <div class="kpi-label">Alertes Critiques</div>
+      <div class="kpi-value" id="count-crit">1</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-label">Alertes Warning</div>
+      <div class="kpi-value" id="count-warn">1</div>
+    </div>
+    <div class="kpi ok">
+      <div class="kpi-label">Alertes Acquittées</div>
+      <div class="kpi-value" id="count-acked">3</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total Incidents (semaine)</div>
+      <div class="kpi-value">12</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Alertes Actives</div>
+        <button class="btn btn-sec btn-sm" onclick="ackAll()">✓ Tout Acquitter</button>
+      </div>
+      <div id="active-alerts-list">
+        <div class="alert-item critical" data-id="a1">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-body">
+            <div class="alert-title">Friture — Température Haute</div>
+            <div class="alert-desc">Station FRI-01 → 182°C (seuil max: 180°C)<br>Lot #2024-089 | Op: Hela B.</div>
+            <div class="alert-actions">
+              <button class="btn btn-sec btn-sm" onclick="ackAlert(this,'a1')">✓ Acquitter</button>
+              <button class="btn btn-sec btn-sm" onclick="showPage('production')">→ Journal</button>
+            </div>
+          </div>
+          <div class="alert-time">09:42</div>
+        </div>
+        <div class="alert-item warning" data-id="a2">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-body">
+            <div class="alert-title">Chambre Froide — Dérive Température</div>
+            <div class="alert-desc">CF-03 → -15.4°C (seuil HACCP: -16°C)<br>Surveillance en cours — Lot #2024-089</div>
+            <div class="alert-actions">
+              <button class="btn btn-sec btn-sm" onclick="ackAlert(this,'a2')">✓ Acquitter</button>
+            </div>
+          </div>
+          <div class="alert-time">08:17</div>
+        </div>
+      </div>
+      <div class="empty-state" id="no-alerts" style="display:none">
+        <div class="empty-icon">✅</div>
+        <div>Aucune alerte active</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Historique Incidents (Semaine)</div>
+      </div>
+      <div>
+        <div class="alert-item info acked">
+          <div class="alert-icon">ℹ️</div>
+          <div class="alert-body">
+            <div class="alert-title">Blanchiment — Temp Rétablie</div>
+            <div class="alert-desc">BL-01 → 92.3°C — Conformité OK</div>
+          </div>
+          <div class="alert-time">07:55</div>
+        </div>
+        <div class="alert-item warning acked">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-body">
+            <div class="alert-title">Surgélation — Dérive -24°C</div>
+            <div class="alert-desc">SUR-01 → -24°C (seuil: -25°C) — Lot #2024-087</div>
+          </div>
+          <div class="alert-time">Hier 14:22</div>
+        </div>
+        <div class="alert-item critical acked">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-body">
+            <div class="alert-title">Blanchiment — Sous-Temp HACCP</div>
+            <div class="alert-desc">BL-02 → 88°C (seuil: 90°C) — CRITIQUE HACCP — Lot #2024-085</div>
+          </div>
+          <div class="alert-time">Hier 09:10</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Trigger manuel -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Générer une Alerte Manuelle</div>
+    </div>
+    <div class="panel-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Station</label>
+          <select id="manual-station">
+            <option>Trie</option>
+            <option>Blanchiment</option>
+            <option>Friture</option>
+            <option>Surgélation Choc</option>
+            <option>Chambre Froide</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Niveau</label>
+          <select id="manual-level">
+            <option value="critical">🚨 Critique</option>
+            <option value="warning">⚠️ Warning</option>
+            <option value="info">ℹ️ Info</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="manual-desc" placeholder="Description de l'incident...">
+      </div>
+      <button class="btn btn-danger" onclick="addManualAlert()">🚨 DÉCLENCHER ALERTE</button>
+    </div>
+  </div>
+
+</div><!-- /alertes -->
+
+<!-- ==================== OPÉRATEURS ==================== -->
+<div class="page" id="page-operateurs">
+
+  <div class="section-title">Gestion des Opérateurs</div>
+
+  <div class="grid-2">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Ajouter un Opérateur</div>
+      </div>
+      <div class="panel-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prénom *</label>
+            <input type="text" id="op-fname" placeholder="Prénom">
+          </div>
+          <div class="form-group">
+            <label>Nom *</label>
+            <input type="text" id="op-lname" placeholder="Nom">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rôle</label>
+            <select id="op-role">
+              <option>Opérateur</option>
+              <option>Chef d'équipe</option>
+              <option>Chef production</option>
+              <option>Responsable qualité</option>
+              <option>Technicien maintenance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Station affectée</label>
+            <select id="op-station-assign">
+              <option>Réception MP</option>
+              <option>Lavage / Épluchage</option>
+              <option>Trie</option>
+              <option>Coupe 9×9</option>
+              <option>Bulle Continue</option>
+              <option>Blanchiment</option>
+              <option>Égouttage Vibrant</option>
+              <option>Séchage Air</option>
+              <option>Friture</option>
+              <option>Ventilation</option>
+              <option>Surgélation Choc</option>
+              <option>Emballage</option>
+              <option>Chambre Froide</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date entrée poste</label>
+            <input type="time" id="op-start" value="07:00">
+          </div>
+          <div class="form-group">
+            <label>Matricule</label>
+            <input type="text" id="op-matricule" placeholder="Ex: OP-042">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addOperator()">+ AJOUTER OPÉRATEUR</button>
+      </div>
+    </div>
+
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Équipe FRITZ</div>
+        <span class="badge badge-ok" id="op-count-badge">3 en poste</span>
+      </div>
+      <div id="op-list" style="display:flex;flex-direction:column;gap:6px;padding:12px">
+        <div class="op-card">
+          <div class="op-avatar" style="background:#ff6b1a">HB</div>
+          <div>
+            <div class="op-name">HELA</div>
+            <div class="op-role">Qualité Process • QP-001</div>
+            <div class="op-station">📍 Contrôle Qualité Process — ACTIVE depuis 07:00</div>
+            <div class="op-stats">Accès saisie : toutes stations</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="badge badge-ok">EN POSTE</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:4px">4h 15min</div>
+          </div>
+        </div>
+        <div class="op-card">
+          <div class="op-avatar" style="background:#00c9ff">HS</div>
+          <div>
+            <div class="op-name">HANENE</div>
+            <div class="op-role">Hygiéniste • HYG-001</div>
+            <div class="op-station">📍 Hygiène & Nettoyage — ACTIVE depuis 07:00</div>
+            <div class="op-stats">Accès saisie : toutes stations</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="badge badge-ok">EN POSTE</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:4px">4h 10min</div>
+          </div>
+        </div>
+        <div class="op-card">
+          <div class="op-avatar" style="background:#00e676;color:#000">AM</div>
+          <div>
+            <div class="op-name">AHLEM</div>
+            <div class="op-role">Qualité Production • QP-002</div>
+            <div class="op-station">📍 Contrôle Qualité Production — ACTIVE depuis 06:45</div>
+            <div class="op-stats">Accès saisie : toutes stations</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="badge badge-ok">EN POSTE</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:4px">4h 30min</div>
+          </div>
+        </div>
+        <div class="op-card" style="border-left:3px solid var(--accent)">
+          <div class="op-avatar" style="background:linear-gradient(135deg,#ff6b1a,#ffaa00)">DR</div>
+          <div>
+            <div class="op-name">DIRECTEUR</div>
+            <div class="op-role">Direction Générale • DIR-001</div>
+            <div class="op-station">📍 Accès complet — Dashboard & Analyse</div>
+            <div class="op-stats">Accès saisie : toutes stations + modules direction</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="badge badge-orange">DIRECTION</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:4px">Accès total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /operateurs -->
+
+<!-- ==================== HACCP ==================== -->
+<div class="page" id="page-haccp">
+
+  <div class="section-title">Registre HACCP — Conformité Temps Réel</div>
+
+  <div class="kpi-bar" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+    <div class="kpi ok">
+      <div class="kpi-label">Points Critiques OK</div>
+      <div class="kpi-value">6 <span class="kpi-unit">/ 8</span></div>
+    </div>
+    <div class="kpi danger">
+      <div class="kpi-label">Non-Conformités</div>
+      <div class="kpi-value">2</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Contrôles Effectués</div>
+      <div class="kpi-value">24</div>
+      <div class="kpi-sub">Aujourd'hui</div>
+    </div>
+    <div class="kpi ok">
+      <div class="kpi-label">Dernière vérif.</div>
+      <div class="kpi-value" id="haccp-last-check">09:45</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Points de Contrôle Critiques (CCP)</div>
+      </div>
+      <div class="panel-body">
+        <div class="haccp-bar" id="haccp-ccp-list">
+          <div class="haccp-item">
+            <div class="haccp-icon">♨️</div>
+            <div style="flex:1">
+              <div class="haccp-name">Blanchiment — CCP1</div>
+              <div class="haccp-limit">Seuil min: 90°C | Durée min: 8 min</div>
+            </div>
+            <div>
+              <div class="haccp-val ok">92.3°C ✓</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--green)">8 min 12s</div>
+            </div>
+          </div>
+          <div class="haccp-item">
+            <div class="haccp-icon">🔥</div>
+            <div style="flex:1">
+              <div class="haccp-name">Friture — CCP2</div>
+              <div class="haccp-limit">Seuil: 170–180°C | Durée: 2'30''–3'</div>
+            </div>
+            <div>
+              <div class="haccp-val danger">182°C ✗</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--red)">Hors seuil!</div>
+            </div>
+          </div>
+          <div class="haccp-item">
+            <div class="haccp-icon">❄️</div>
+            <div style="flex:1">
+              <div class="haccp-name">Surgélation Choc — CCP3</div>
+              <div class="haccp-limit">Seuil max: -25°C</div>
+            </div>
+            <div>
+              <div class="haccp-val ok">-28°C ✓</div>
+            </div>
+          </div>
+          <div class="haccp-item">
+            <div class="haccp-icon">🧊</div>
+            <div style="flex:1">
+              <div class="haccp-name">Chambre Froide — CCP4</div>
+              <div class="haccp-limit">Seuil max: -16°C | Cible: -18°C</div>
+            </div>
+            <div>
+              <div class="haccp-val warn">-15.4°C ⚠</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--yellow)">Surveillance!</div>
+            </div>
+          </div>
+          <div class="haccp-item">
+            <div class="haccp-icon">🚿</div>
+            <div style="flex:1">
+              <div class="haccp-name">Lavage — OPRP1</div>
+              <div class="haccp-limit">Eau &lt;25°C | Changement eau toutes 4h</div>
+            </div>
+            <div>
+              <div class="haccp-val ok">18°C ✓</div>
+            </div>
+          </div>
+          <div class="haccp-item">
+            <div class="haccp-icon">📦</div>
+            <div style="flex:1">
+              <div class="haccp-name">Réception MP — OPRP2</div>
+              <div class="haccp-limit">Temp réception &lt;15°C</div>
+            </div>
+            <div>
+              <div class="haccp-val ok">12°C ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Enregistrement HACCP Manuel</div>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label>Point de Contrôle</label>
+          <select id="haccp-point">
+            <option>Blanchiment — CCP1</option>
+            <option>Friture — CCP2</option>
+            <option>Surgélation Choc — CCP3</option>
+            <option>Chambre Froide — CCP4</option>
+            <option>Lavage — OPRP1</option>
+            <option>Trie — OPRP3</option>
+            <option>Réception MP — OPRP2</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valeur mesurée</label>
+            <input type="number" id="haccp-val" placeholder="Ex: 92.5" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Unité</label>
+            <select id="haccp-unit">
+              <option>°C</option>
+              <option>min</option>
+              <option>pH</option>
+              <option>Aw</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Action corrective (si NC)</label>
+          <textarea id="haccp-action" placeholder="Décrire l'action corrective prise..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Responsable</label>
+          <select id="haccp-op">
+            <option value="HELA">HELA — Qualité Process</option>
+            <option value="HANENE">HANENE — Hygiéniste</option>
+            <option value="AHLEM">AHLEM — Qualité Production</option>
+            <option value="DIRECTEUR">DIRECTEUR</option>
+            <option>HELA — Qualité Process</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveHACCP()">📋 ENREGISTRER CONTRÔLE</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Journal HACCP Aujourd'hui</div>
+      <div style="display:flex;gap:8px">
+        <button class="export-btn btn-sm">⬇ Export HACCP ISO 22000</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Heure</th>
+            <th>Point Contrôle</th>
+            <th>Valeur</th>
+            <th>Limite</th>
+            <th>Conformité</th>
+            <th>Action corrective</th>
+            <th>Opérateur</th>
+          </tr>
+        </thead>
+        <tbody id="haccp-tbody">
+          <tr>
+            <td>09:45</td>
+            <td>Blanchiment — CCP1</td>
+            <td>92.3°C / 8min12s</td>
+            <td>&gt;90°C / &gt;8min</td>
+            <td><span class="badge badge-ok">CONFORME</span></td>
+            <td>—</td>
+            <td>Hanene S.</td>
+          </tr>
+          <tr>
+            <td>09:42</td>
+            <td>Friture — CCP2</td>
+            <td style="color:var(--red)">182°C</td>
+            <td>170–180°C</td>
+            <td><span class="badge badge-danger">NON-CONF</span></td>
+            <td style="color:var(--yellow)">Régulateur réajusté → 175°C</td>
+            <td>Hela B.</td>
+          </tr>
+          <tr>
+            <td>08:17</td>
+            <td>Chambre Froide — CCP4</td>
+            <td style="color:var(--yellow)">-15.4°C</td>
+            <td>&lt;-16°C</td>
+            <td><span class="badge badge-warn">SURVEIL</span></td>
+            <td style="color:var(--yellow)">Groupe froid vérifié — suivi toutes 30min</td>
+            <td>Ahlem M.</td>
+          </tr>
+          <tr>
+            <td>07:00</td>
+            <td>Réception MP — OPRP2</td>
+            <td>12°C</td>
+            <td>&lt;15°C</td>
+            <td><span class="badge badge-ok">CONFORME</span></td>
+            <td>—</td>
+            <td>Ahlem M.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /haccp -->
+
+</div><!-- /main-content -->
+
+<!-- ==================== TOAST CONTAINER ==================== -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ==========================================
+// DATA — State
+// ==========================================
+const STATE = {
+  alerts: [
+    { id:'a1', type:'critical', station:'Friture', desc:'FRI-01 → 182°C (seuil: 180°C)', lot:'#2024-089', time:'09:42', acked:false },
+    { id:'a2', type:'warning', station:'Chambre Froide', desc:'CF-03 → -15.4°C (seuil: -16°C)', lot:'#2024-089', time:'08:17', acked:false },
+  ],
+  operators: 5,
+  productionLogs: [],
+  qualChecks: 3,
+};
+
+const STATIONS = [
+  { id:'reception', name:'📦 Réception MP', temp:12, unit:'°C', op:'AHLEM', status:'ok', threshold:'< 15°C', progress:75, min:null, max:15 },
+  { id:'lavage', name:'🚿 Lavage / Épluchage', temp:18, unit:'°C', op:'AHLEM', status:'ok', threshold:'< 25°C', progress:100, min:null, max:25, hz:[{label:'Conv. Lavage', val:35.0}] },
+  { id:'trie', name:'🔀 Trie', temp:20, unit:'°C', op:'AHLEM', status:'ok', threshold:'Calibrage produit', progress:65, hz:[{label:'Conv. Trie', val:33.5}] },
+  { id:'coupe', name:'🔪 Coupe 9×9', temp:20, unit:'°C', op:'Libre', status:'idle', threshold:'Ambiante', progress:0 },
+  { id:'bulle', name:'💧 Bulle Continue', temp:22, unit:'°C', op:'HANENE', status:'ok', threshold:'eau fraîche', progress:40, hz:[{label:'Conv. Bulle', val:32.0},{label:'Vibreur', val:42.0}] },
+  { id:'blanchiment', name:'♨️ Blanchiment', temp:92.3, unit:'°C', op:'HANENE', status:'ok', threshold:'≥ 90°C | 8 min', progress:60, min:90, max:null, hz:[{label:'Vibreur sortie', val:44.0},{label:'Conv. Séchage', val:31.5}] },
+  { id:'egouttage', name:'📳 Égouttage Vibrant', temp:45, unit:'°C', op:'HELA', status:'ok', threshold:'produit chaud', progress:55 },
+  { id:'sechage', name:'💨 Séchage Air', temp:55, unit:'°C', op:'HELA', status:'ok', threshold:'air soufflé', progress:70 },
+  { id:'friture', name:'🔥 Friture', temp:182, unit:'°C', op:'HELA', status:'crit', threshold:'170-180°C | 2min30s-3min', progress:80, min:170, max:180, hz:[{label:'Vitesse Friture', val:25.0},{label:'Conv. Ventil.', val:38.0}] },
+  { id:'ventilation', name:'🌬️ Ventilation', temp:28, unit:'°C', op:'HELA', status:'ok', threshold:'post-friture', progress:80, hz:[{label:'Conv. Ventil.', val:38.0}] },
+  { id:'surgelation', name:'❄️ Surgélation Choc', temp:-28, unit:'°C', op:'AHLEM', status:'ok', threshold:'< -25°C', progress:90, min:null, max:-25 },
+  { id:'emballage', name:'🎁 Emballage', temp:18, unit:'°C', op:'HELA', status:'ok', threshold:'< 20°C', progress:65 },
+  { id:'chambre', name:'🧊 Chambre Froide', temp:-15.4, unit:'°C', op:'Auto', status:'warn', threshold:'-18°C (max: -16°C)', progress:100, min:null, max:-16 },
+];
+
+const FLOW = [
+  { id:'reception', icon:'📦', label:'Réception', status:'ok' },
+  { id:'lavage', icon:'🚿', label:'Lavage', status:'ok' },
+  { id:'trie', icon:'🔀', label:'Trie', status:'ok' },
+  { id:'coupe', icon:'🔪', label:'Coupe', status:'ok' },
+  { id:'bulle', icon:'💧', label:'Bulle', status:'ok' },
+  { id:'blanchiment', icon:'♨️', label:'Blanchi.', status:'ok' },
+  { id:'egouttage', icon:'📳', label:'Égoutt.', status:'ok' },
+  { id:'sechage', icon:'💨', label:'Séchage', status:'ok' },
+  { id:'friture', icon:'🔥', label:'Friture', status:'crit' },
+  { id:'ventilation', icon:'🌬️', label:'Ventil.', status:'ok' },
+  { id:'surgelation', icon:'❄️', label:'Surgél.', status:'ok' },
+  { id:'emballage', icon:'🎁', label:'Emball.', status:'ok' },
+  { id:'chambre', icon:'🧊', label:'Chambre', status:'warn' },
+];
+
+// Station specs for form helper
+const STATION_SPECS = {
+  blanchiment: { min:90, max:null, durMin:8, durMax:8, unit:'°C', hint:'Temp. min HACCP: 90°C | Durée exacte: 8 min' },
+  friture: { min:170, max:180, durMin:2.5, durMax:3, unit:'°C', hint:'Fourchette: 170–180°C | Durée: 2min30s–3min' },
+  surgelation: { min:null, max:-25, durMin:null, durMax:null, unit:'°C', hint:'Seuil max HACCP: -25°C' },
+  chambre: { min:null, max:-16, durMin:null, durMax:null, unit:'°C', hint:'Seuil max HACCP: -16°C | Cible: -18°C' },
+  reception: { min:null, max:15, durMin:null, durMax:null, unit:'°C', hint:'Temp. réception &lt; 15°C' },
+  trie: { min:null, max:null, durMin:null, durMax:null, unit:'Hz', hint:'Calibrage produit — Saisir vitesse convoyeur de trie en Hz' },
+};
+
+// ==========================================
+// CLOCK
+// ==========================================
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('header-clock').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('header-date').textContent =
+    now.toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ==========================================
+// NAV
+// ==========================================
+function showPage(id) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Deactivate all nav buttons
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  // Show target page
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  // Activate matching nav button via data-page attribute
+  const btn = document.querySelector('.nav-btn[data-page="' + id + '"]');
+  if (btn) btn.classList.add('active');
+}
+
+// ==========================================
+// INIT: Stations
+// ==========================================
+function initStations() {
+  const grid = document.getElementById('station-grid');
+  grid.innerHTML = '';
+  STATIONS.forEach(s => {
+    const card = document.createElement('div');
+    card.className = `station-card ${s.status}`;
+    const tempClass = s.status;
+    const progressBar = s.progress > 0 ? `
+      <div class="station-progress">
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${s.progress}%;background:${s.status==='ok'?'var(--green)':s.status==='warn'?'var(--yellow)':'var(--red)'}"></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:3px">
+          ${s.progress}% traité
+        </div>
+      </div>` : '';
+    const alertTag = s.status === 'crit' ? `
+      <div class="station-alert-tag">→ Intervention requise — Seuil dépassé</div>` : '';
+    // Hz speed display
+    const hzBlock = s.hz && s.hz.length ? `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px">
+        ${s.hz.map(h => `
+          <div style="display:flex;flex-direction:column;align-items:center;background:var(--bg2);padding:4px 8px;border:1px solid var(--border);flex:1;min-width:70px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--accent2);letter-spacing:0.5px;white-space:nowrap">${h.label}</div>
+            <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent2)">${h.val} <span style="font-size:9px;color:var(--text2)">Hz</span></div>
+          </div>`).join('')}
+      </div>` : '';
+    card.innerHTML = `
+      <div class="station-name">${s.name}</div>
+      <div class="station-temp ${tempClass}">${s.temp}${s.unit}</div>
+      <div class="station-meta">${s.threshold}</div>
+      <div class="station-op">👷 ${s.op}</div>
+      ${hzBlock}
+      ${progressBar}
+      ${alertTag}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ==========================================
+// INIT: Process Flow
+// ==========================================
+function initFlow() {
+  const flow = document.getElementById('process-flow');
+  flow.innerHTML = '';
+  FLOW.forEach((step, i) => {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'flow-step';
+    stepEl.innerHTML = `
+      <div class="flow-dot ${step.status}">
+        ${step.icon}
+        <span class="status-pin"></span>
+      </div>
+      <div class="flow-label">${step.label}</div>
+    `;
+    flow.appendChild(stepEl);
+    if (i < FLOW.length - 1) {
+      const conn = document.createElement('div');
+      conn.className = 'flow-connector' + (step.status === 'ok' ? ' active' : '');
+      flow.appendChild(conn);
+    }
+  });
+}
+
+// ==========================================
+// INIT: Rendement bars
+// ==========================================
+function initRendBars() {
+  const data = [
+    { label:'Réception', val:99.4, color:'var(--green)' },
+    { label:'Lavage/Épluchage', val:84.5, color:'var(--green)' },
+    { label:'Coupe 9×9', val:98.2, color:'var(--green)' },
+    { label:'Bulle Continue', val:99.8, color:'var(--green)' },
+    { label:'Blanchiment', val:99.6, color:'var(--green)' },
+    { label:'Égouttage', val:98.5, color:'var(--green)' },
+    { label:'Séchage Air', val:97.2, color:'var(--green)' },
+    { label:'Friture', val:89.5, color:'var(--yellow)' },
+    { label:'Ventilation', val:99.0, color:'var(--green)' },
+    { label:'Surgélation', val:99.7, color:'var(--green)' },
+    { label:'Emballage', val:99.9, color:'var(--green)' },
+  ];
+
+  const container = document.getElementById('rend-bars');
+  if (!container) return;
+  container.innerHTML = '';
+  data.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'rend-row';
+    // Target line position: ~66.5% of track width corresponds to ~66.5% fill
+    const targetPx = 66.5; // percentage
+    row.innerHTML = `
+      <div class="rend-label">${d.label}</div>
+      <div class="rend-track">
+        <div class="rend-fill" style="width:${d.val}%;background:${d.color}">
+          ${d.val < 70 ? d.val+'%' : ''}
+        </div>
+        <div class="rend-target" style="left:${targetPx}%"></div>
+      </div>
+      <div class="rend-val" style="color:${d.color}">${d.val}%</div>
+    `;
+    container.appendChild(row);
+  });
+
+  // Rendement history sparkline
+  const hist = document.getElementById('rend-history-bars');
+  if (hist) {
+    const vals = [64.2,65.8,63.1,66.9,67.1,65.4,66.2,64.8,67.4,66.1,65.9,66.8,67.2,65.0,64.5,66.7,68.1,65.3,66.5,67.0,64.9,65.7,66.3,67.5,65.8,66.1,64.3,65.5,66.4,66.4];
+    hist.innerHTML = '';
+    vals.forEach(v => {
+      const bar = document.createElement('div');
+      const pct = ((v - 60) / 10 * 100);
+      const clr = v >= 66 ? 'var(--green)' : v >= 64 ? 'var(--yellow)' : 'var(--red)';
+      bar.style.cssText = `flex:1;height:${Math.max(4,pct)}%;background:${clr};opacity:0.7;border-radius:1px;`;
+      hist.appendChild(bar);
+    });
+  }
+}
+
+// ==========================================
+// INIT: Sparklines on dashboard
+// ==========================================
+function initSparklines() {
+  function makeSpark(id, vals, color) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    const max = Math.max(...vals);
+    const min = Math.min(...vals);
+    vals.forEach(v => {
+      const b = document.createElement('div');
+      b.className = 'spark-bar';
+      const h = max === min ? 60 : ((v - min) / (max - min) * 80 + 20);
+      b.style.cssText = `height:${h}%;background:${color};opacity:0.6;`;
+      el.appendChild(b);
+    });
+  }
+  makeSpark('spark-prod', [2100,2300,2200,2600,2700,2500,2847], 'var(--green)');
+  makeSpark('spark-rend', [64.8,65.2,64.1,66.3,67.1,65.8,66.4], 'var(--accent2)');
+}
+
+// ==========================================
+// PRODUCTION — Form
+// ==========================================
+// ==========================================
+// OPERATOR SESSION
+// ==========================================
+let currentOperator = null;
+
+function loginAs(name, role, color, initials) {
+  currentOperator = { name, role, color, initials };
+  document.getElementById('saisie-login-screen').style.display = 'none';
+  document.getElementById('saisie-form-screen').style.display = 'block';
+
+  // Update banner
+  const av = document.getElementById('banner-avatar');
+  av.textContent = initials;
+  av.style.background = color;
+  av.style.color = (color === '#00e676' || color === '#ffd600') ? '#000' : '#fff';
+  document.getElementById('banner-name').textContent = name;
+  document.getElementById('banner-role').textContent = role;
+  document.getElementById('banner-time').textContent = new Date().toTimeString().slice(0,5);
+
+  // Update header user pill
+  const upill = document.querySelector('.user-name');
+  if (upill) upill.textContent = name.toUpperCase();
+
+  document.getElementById('prod-date').value = new Date().toISOString().slice(0,16);
+  initStationPicker();
+  showToast('✓ Connecté en tant que ' + name + ' — ' + role, 'ok');
+}
+
+function logoutOp() {
+  currentOperator = null;
+  document.getElementById('saisie-login-screen').style.display = 'flex';
+  document.getElementById('saisie-form-screen').style.display = 'none';
+  clearForm();
+}
+
+// ==========================================
+// STATION PICKER
+// ==========================================
+const STATIONS_LIST = [
+  { value:'reception', label:'📦 Réception MP', short:'Réception' },
+  { value:'lavage', label:'🚿 Lavage/Épluchage', short:'Lavage' },
+  { value:'trie', label:'🔀 Trie', short:'Trie' },
+  { value:'coupe', label:'🔪 Coupe 9×9', short:'Coupe' },
+  { value:'bulle', label:'💧 Bulle Continue', short:'Bulle' },
+  { value:'blanchiment', label:'♨️ Blanchiment', short:'Blanchi.' },
+  { value:'egouttage', label:'📳 Égouttage', short:'Égoutt.' },
+  { value:'sechage', label:'💨 Séchage Air', short:'Séchage' },
+  { value:'friture', label:'🔥 Friture', short:'Friture' },
+  { value:'ventilation', label:'🌬️ Ventilation', short:'Ventil.' },
+  { value:'surgelation', label:'❄️ Surgélation', short:'Surgél.' },
+  { value:'emballage', label:'🎁 Emballage', short:'Emball.' },
+  { value:'chambre', label:'🧊 Chambre Froide', short:'Chambre' },
+];
+
+function initStationPicker() {
+  const picker = document.getElementById('station-picker');
+  if (!picker) return;
+  picker.innerHTML = '';
+  STATIONS_LIST.forEach(s => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'station-btn';
+    btn.textContent = s.label;
+    btn.dataset.value = s.value;
+    btn.onclick = () => selectStation(s.value, btn);
+    picker.appendChild(btn);
+  });
+}
+
+function selectStation(val, btn) {
+  document.querySelectorAll('.station-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('prod-station').value = val;
+  onStationChange();
+}
+
+function onStationChange() {
+  const val = document.getElementById('prod-station').value;
+  const box = document.getElementById('station-spec-box');
+  const spec = STATION_SPECS[val];
+
+  // Show/hide spec hint box
+  if (spec) {
+    box.style.display = 'block';
+    box.innerHTML = `<strong>⚙ PARAMÈTRES STATION :</strong> ${spec.hint}`;
+  } else {
+    box.style.display = 'none';
+  }
+
+  // Hide ALL hz blocks first
+  ['hz-lavage','hz-trie','hz-bulle','hz-blanchiment','hz-friture','hz-ventilation'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  // Show the relevant Hz block
+  const hzMap = {
+    'lavage':      'hz-lavage',
+    'trie':        'hz-trie',
+    'bulle':       'hz-bulle',
+    'blanchiment': 'hz-blanchiment',
+    'friture':     'hz-friture',
+    'ventilation': 'hz-ventilation',
+  };
+  if (hzMap[val]) {
+    const el = document.getElementById(hzMap[val]);
+    if (el) el.style.display = 'block';
+  }
+}
+
+// ==========================================
+// PRODUCTION — Form
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  const dateEl = document.getElementById('prod-date');
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0,16);
+});
+
+function calcRendement() {
+  const qIn = parseFloat(document.getElementById('prod-qte-in').value);
+  const qOut = parseFloat(document.getElementById('prod-qte-out').value);
+  const rendEl = document.getElementById('prod-rendement');
+  const perteEl = document.getElementById('prod-perte');
+
+  if (qIn > 0 && qOut > 0) {
+    const r = (qOut / qIn * 100);
+    const perte = 100 - r;
+    rendEl.value = r.toFixed(1) + '%';
+    rendEl.style.color = r < 65 ? 'var(--red)' : r < 66 ? 'var(--yellow)' : 'var(--green)';
+    perteEl.value = perte.toFixed(1) + '%';
+    perteEl.style.color = perte > 5 ? 'var(--red)' : 'var(--green)';
+  } else {
+    rendEl.value = '—'; perteEl.value = '—';
+  }
+}
+
+function checkTemp(fromInput) {
+  const stationVal = document.getElementById('prod-station').value;
+  const temp = parseFloat(document.getElementById('prod-temp').value);
+  const tag = document.getElementById('temp-warning-tag');
+  if (!temp || !stationVal) { tag.style.display='none'; return; }
+
+  let alertMsg = null;
+  if (stationVal === 'blanchiment' && temp < 90) alertMsg = '⚠ Blanchiment sous 90°C — CCP HACCP CRITIQUE!';
+  if (stationVal === 'friture' && temp > 180) alertMsg = '🚨 Friture > 180°C — Réduire température immédiatement!';
+  if (stationVal === 'friture' && temp < 170) alertMsg = '⚠ Friture < 170°C — Augmenter température!';
+  if (stationVal === 'surgelation' && temp > -25) alertMsg = '⚠ Surgélation > -25°C — Vérifier groupe frigorifique!';
+  if (stationVal === 'chambre' && temp > -16) alertMsg = '⚠ Chambre froide > -16°C — HACCP NON-CONFORME!';
+
+  if (alertMsg && fromInput) {
+    tag.style.display = 'block';
+    showToast(alertMsg, 'danger');
+    addAutoAlert(alertMsg);
+  } else {
+    tag.style.display = 'none';
+  }
+}
+
+function saveLog() {
+  const stationVal = document.getElementById('prod-station').value;
+  const stationBtn = document.querySelector('.station-btn.selected');
+  const stationText = stationBtn ? stationBtn.textContent : stationVal;
+  const lot = document.getElementById('prod-lot').value.trim();
+  const qIn = document.getElementById('prod-qte-in').value;
+  const qOut = document.getElementById('prod-qte-out').value;
+  const temp = document.getElementById('prod-temp').value;
+  const dur = document.getElementById('prod-time').value;
+  const rendEl = document.getElementById('prod-rendement');
+  const perteEl = document.getElementById('prod-perte');
+
+  const opName = currentOperator ? currentOperator.name : 'Inconnu';
+
+  if (!stationVal || !lot || !qIn || !qOut) {
+    showToast('⚠ Remplissez les champs obligatoires : Lot, Station, Quantités', 'warn');
+    return;
+  }
+
+  checkTemp(false);
+
+  // Collect Hz parameters depending on station
+  const getVal = id => { const el = document.getElementById(id); return el && el.value ? parseFloat(el.value).toFixed(1)+' Hz' : '—'; };
+  let hzInfo = '';
+  if (stationVal === 'trie') {
+    const v1 = getVal('hz-conv-trie');
+    if (v1!=='—') hzInfo = `Conv.Trie: ${v1}`;
+  } else if (stationVal === 'lavage') {
+    const v1 = getVal('hz-conv-lavage');
+    if (v1!=='—') hzInfo = `Conv.Lavage: ${v1}`;
+  } else if (stationVal === 'bulle') {
+    const v1 = getVal('hz-conv-bulle'), v2 = getVal('hz-vibreur-bulle');
+    if (v1!=='—'||v2!=='—') hzInfo = `Conv.Bulle: ${v1} | Vibreur: ${v2}`;
+  } else if (stationVal === 'blanchiment') {
+    const v1 = getVal('hz-vibreur-blanchi'), v2 = getVal('hz-conv-sechage');
+    if (v1!=='—'||v2!=='—') hzInfo = `Vibreur: ${v1} | Conv.Séchage: ${v2}`;
+  } else if (stationVal === 'friture') {
+    const v1 = getVal('hz-friture-vitesse'), v2 = getVal('hz-conv-ventil');
+    if (v1!=='—'||v2!=='—') hzInfo = `Vit.Friture: ${v1} | Conv.Ventil: ${v2}`;
+  } else if (stationVal === 'ventilation') {
+    const v1 = getVal('hz-conv-ventil2');
+    if (v1!=='—') hzInfo = `Conv.Ventil: ${v1}`;
+  }
+
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const rVal = rendEl.value || '—';
+  const pVal = perteEl.value || '—';
+  const rNum = parseFloat(rVal);
+
+  let statusBadge, tempColor = '';
+  if (rNum < 65) {
+    statusBadge = '<span class="badge badge-danger">PERTE ANORM.</span>';
+  } else {
+    const tv = parseFloat(temp);
+    const sVal = stationVal;
+    if ((sVal==='friture' && tv > 180) || (sVal==='blanchiment' && tv < 90) ||
+        (sVal==='chambre' && tv > -16) || (sVal==='surgelation' && tv > -25)) {
+      statusBadge = '<span class="badge badge-danger">ALERTE TEMP</span>';
+      tempColor = 'color:var(--red)';
+    } else {
+      statusBadge = '<span class="badge badge-ok">OK</span>';
+    }
+  }
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${time}</td>
+    <td>${lot}</td>
+    <td>${stationText}</td>
+    <td>${parseFloat(qIn).toFixed(1)}</td>
+    <td>${parseFloat(qOut).toFixed(1)}</td>
+    <td><span style="color:${rNum<65?'var(--red)':rNum<66?'var(--yellow)':'var(--green)'}">${rVal}</span></td>
+    <td><span style="color:${parseFloat(pVal)>5?'var(--yellow)':'var(--green)'}">${pVal}</span></td>
+    <td ${tempColor ? 'style="'+tempColor+'"':''}>${temp ? temp+'°C' : '—'}</td>
+    <td>${dur ? dur+' min' : '—'}</td>
+    <td style="color:var(--accent2);font-size:10px">${hzInfo || '—'}</td>
+    <td>${opName}</td>
+    <td>${statusBadge}</td>
+  `;
+  document.getElementById('prod-tbody').prepend(row);
+
+  // Update entry count
+  const countBadge = document.getElementById('journal-entry-count');
+  const currentCount = parseInt(countBadge.textContent) || 4;
+  countBadge.textContent = (currentCount+1) + ' entrées';
+
+  showToast('✓ Entrée enregistrée avec succès', 'ok');
+  clearForm();
+}
+
+function clearForm() {
+  // Clear standard fields
+  ['prod-lot','prod-qte-in','prod-qte-out','prod-temp','prod-time','prod-obs',
+   'prod-huile','prod-acidite',
+   'hz-conv-lavage','hz-conv-trie',
+   'hz-conv-bulle','hz-vibreur-bulle',
+   'hz-vibreur-blanchi','hz-conv-sechage',
+   'hz-friture-vitesse','hz-conv-ventil','hz-conv-ventil2'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('prod-rendement').value = '';
+  document.getElementById('prod-perte').value = '';
+  document.getElementById('prod-station').value = '';
+  document.querySelectorAll('.station-btn').forEach(b => b.classList.remove('selected'));
+  const dateEl = document.getElementById('prod-date');
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0,16);
+  const box = document.getElementById('station-spec-box');
+  if (box) box.style.display = 'none';
+  const tag = document.getElementById('temp-warning-tag');
+  if (tag) tag.style.display = 'none';
+  // Hide all Hz blocks
+  ['hz-lavage','hz-trie','hz-bulle','hz-blanchiment','hz-friture','hz-ventilation'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+// ==========================================
+// ALERTS
+// ==========================================
+function updateAlertCount() {
+  const active = STATE.alerts.filter(a => !a.acked).length;
+  document.getElementById('alert-count').textContent = active;
+  document.getElementById('nav-alert-badge').textContent = active;
+  document.getElementById('kpi-alerts').textContent = active;
+  document.getElementById('kpi-alerts-card').className = active > 0 ? 'kpi danger' : 'kpi ok';
+
+  const countCrit = STATE.alerts.filter(a => !a.acked && a.type === 'critical').length;
+  const countWarn = STATE.alerts.filter(a => !a.acked && a.type === 'warning').length;
+  const countAcked = STATE.alerts.filter(a => a.acked).length;
+  if (document.getElementById('count-crit')) {
+    document.getElementById('count-crit').textContent = countCrit;
+    document.getElementById('count-warn').textContent = countWarn;
+    document.getElementById('count-acked').textContent = countAcked + 3;
+  }
+}
+
+function ackAlert(btn, id) {
+  const item = btn.closest('.alert-item');
+  item.classList.add('acked');
+  STATE.alerts.forEach(a => { if(a.id === id) a.acked = true; });
+  btn.textContent = '✓ ACQUITTÉ';
+  btn.disabled = true;
+  updateAlertCount();
+  showToast('✓ Alerte acquittée — Consignée dans le journal', 'ok');
+
+  const active = STATE.alerts.filter(a => !a.acked);
+  if (active.length === 0) {
+    document.getElementById('no-alerts').style.display = 'block';
+  }
+}
+
+function ackAll() {
+  STATE.alerts.forEach(a => a.acked = true);
+  document.querySelectorAll('#active-alerts-list .alert-item').forEach(el => {
+    el.classList.add('acked');
+    const btn = el.querySelector('.btn');
+    if (btn) { btn.textContent = '✓ ACQUITTÉ'; btn.disabled = true; }
+  });
+  document.getElementById('no-alerts').style.display = 'block';
+  updateAlertCount();
+  showToast('✓ Toutes les alertes acquittées', 'ok');
+}
+
+function addAutoAlert(msg) {
+  // Also add to alerts list
+  const newAlert = {
+    id: 'a' + Date.now(),
+    type: msg.includes('🚨') ? 'critical' : 'warning',
+    station: 'Production',
+    desc: msg,
+    lot: document.getElementById('prod-lot').value || '#—',
+    time: new Date().toTimeString().slice(0,5),
+    acked: false,
+  };
+  STATE.alerts.push(newAlert);
+  updateAlertCount();
+}
+
+function addManualAlert() {
+  const station = document.getElementById('manual-station').value;
+  const level = document.getElementById('manual-level').value;
+  const desc = document.getElementById('manual-desc').value.trim();
+  if (!desc) { showToast('⚠ Décrivez l\'incident', 'warn'); return; }
+
+  const icon = level === 'critical' ? '🚨' : level === 'warning' ? '⚠️' : 'ℹ️';
+  const now = new Date().toTimeString().slice(0,5);
+
+  const item = document.createElement('div');
+  item.className = `alert-item ${level}`;
+  item.innerHTML = `
+    <div class="alert-icon">${icon}</div>
+    <div class="alert-body">
+      <div class="alert-title">${station} — Alerte manuelle</div>
+      <div class="alert-desc">${desc}</div>
+      <div class="alert-actions">
+        <button class="btn btn-sec btn-sm" onclick="ackAlert(this,'m${Date.now()}')">✓ Acquitter</button>
+      </div>
+    </div>
+    <div class="alert-time">${now}</div>
+  `;
+  const list = document.getElementById('active-alerts-list');
+  list.insertBefore(item, list.firstChild);
+
+  const newA = { id:'m'+Date.now(), type:level, acked:false };
+  STATE.alerts.push(newA);
+  updateAlertCount();
+  document.getElementById('no-alerts').style.display = 'none';
+
+  document.getElementById('manual-desc').value = '';
+  showToast(`${icon} Alerte ${level} déclenchée — ${station}`, 'danger');
+}
+
+// ==========================================
+// RENDEMENT SIMULATOR
+// ==========================================
+function simulRendement() {
+  const qIn = parseFloat(document.getElementById('sim-in').value);
+  const qOut = parseFloat(document.getElementById('sim-out').value);
+  const cost = parseFloat(document.getElementById('sim-cost').value);
+  const res = document.getElementById('sim-result');
+
+  if (!qIn || !qOut) { res.style.display = 'none'; return; }
+  res.style.display = 'block';
+
+  const rend = (qOut / qIn * 100).toFixed(1);
+  const perte = (qIn - qOut).toFixed(1);
+  const rendNum = parseFloat(rend);
+  const costPerKg = cost ? (qIn * cost / qOut).toFixed(2) : '—';
+
+  const rendColor = rendNum >= 66 ? 'var(--green)' : rendNum >= 64 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('sim-rend-val').textContent = rend + '%';
+  document.getElementById('sim-rend-val').style.color = rendColor;
+  document.getElementById('sim-perte-val').textContent = perte + ' kg';
+  document.getElementById('sim-perte-val').style.color = rendNum < 64 ? 'var(--red)' : 'var(--yellow)';
+  document.getElementById('sim-cost-val').textContent = costPerKg !== "—" ? costPerKg + " DT" : "—";
+
+  let advice = '';
+  if (rendNum >= 66 && rendNum <= 67) {
+    advice = '✅ Rendement optimal dans la fourchette cible (66–67%). Maintenir les paramètres actuels.';
+  } else if (rendNum > 67) {
+    advice = '✅ Excellent rendement (' + rend + '%). Vérifier la cohérence des pesées.';
+  } else if (rendNum >= 64) {
+    advice = '⚠ Rendement légèrement sous-objectif (' + rend + '%). Vérifier les pertes au lavage et à la friture.';
+  } else {
+    advice = '🚨 Rendement anormalement bas (' + rend + '%)! Vérifier: calibrage balance, pertes friture, casse emballage. Perte anormale: ' + perte + ' kg.';
+  }
+  document.getElementById('sim-advice').innerHTML = advice;
+}
+
+// ==========================================
+// QUALITE COULEUR
+// ==========================================
+let cameraActive = false;
+
+async function triggerCamera() {
+  if (cameraActive) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const video = document.getElementById('camera-video');
+    video.srcObject = stream;
+    video.style.display = 'block';
+    document.getElementById('cam-ui').style.display = 'none';
+    cameraActive = true;
+    showToast('📷 Caméra activée', 'ok');
+  } catch(e) {
+    showToast('⚠ Caméra non disponible — Utilisez la simulation', 'warn');
+  }
+}
+
+function captureFrame() {
+  if (!cameraActive) { simulateCapture(); return; }
+  const video = document.getElementById('camera-video');
+  const canvas = document.getElementById('camera-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  canvas.style.display = 'block';
+  // Analyze color
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const rgb = analyzeImageData(imageData);
+  updateQualResult(rgb);
+}
+
+function analyzeImageData(imageData) {
+  const data = imageData.data;
+  let r=0, g=0, b=0;
+  const total = data.length / 4;
+  for (let i=0; i<data.length; i+=4) {
+    r += data[i]; g += data[i+1]; b += data[i+2];
+  }
+  return { r: Math.round(r/total), g: Math.round(g/total), b: Math.round(b/total) };
+}
+
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const d = max - min;
+  let h, s = max === 0 ? 0 : d / max, v = max;
+  if (max === min) { h = 0; }
+  else {
+    switch(max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return { h: Math.round(h*360), s: Math.round(s*100), v: Math.round(v*100) };
+}
+
+function analyzeColor() {
+  if (!cameraActive) { simulateCapture(); return; }
+  captureFrame();
+}
+
+function simulateCapture() {
+  document.getElementById('qual-empty').style.display = 'none';
+  document.getElementById('qual-result').style.display = 'block';
+  document.getElementById('color-hsv-panel').style.display = 'block';
+
+  // Simulate random fritz-like color
+  const hVariance = Math.floor(Math.random() * 16) + 25; // 25-40°
+  const sVariance = Math.floor(Math.random() * 20) + 75; // 75-95%
+  const vVariance = Math.floor(Math.random() * 20) + 68; // 68-88%
+
+  updateQualFromHSV(hVariance, sVariance, vVariance);
+  document.getElementById('qual-time').textContent = new Date().toTimeString().slice(0,5);
+  showToast('✅ Analyse couleur simulée', 'ok');
+}
+
+function updateQualResult(rgb) {
+  const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+  updateQualFromHSV(hsv.h, hsv.s, hsv.v);
+}
+
+function updateQualFromHSV(h, s, v) {
+  document.getElementById('qual-empty').style.display = 'none';
+  document.getElementById('qual-result').style.display = 'block';
+  document.getElementById('color-hsv-panel').style.display = 'block';
+
+  // Reference FRITZ: H≈30°, S≈86%, V≈71%
+  const refH=30, refS=86, refV=71;
+  const diffH = Math.abs(h - refH);
+  const diffS = Math.abs(s - refS);
+  const diffV = Math.abs(v - refV);
+  const score = Math.max(0, Math.round(100 - (diffH * 0.8 + diffS * 0.6 + diffV * 0.6)));
+
+  // Update swatch
+  const r2=Math.round(v/100*255);
+  const hsl = `hsl(${h}, ${s}%, ${Math.round(v/2)}%)`;
+  document.getElementById('swatch-sample').style.background = hsl;
+  document.getElementById('swatch-sample').textContent = `HSV: ${h}° ${s}% ${v}%`;
+
+  // Update score ring
+  const circumference = 2 * Math.PI * 38;
+  const offset = circumference - (score / 100 * circumference);
+  const circle = document.getElementById('score-circle');
+  const pctEl = document.getElementById('score-pct');
+  circle.style.strokeDashoffset = offset.toFixed(1);
+  pctEl.textContent = score + '%';
+
+  const scoreColor = score >= 80 ? 'var(--green)' : score >= 65 ? 'var(--yellow)' : 'var(--red)';
+  circle.style.stroke = scoreColor;
+  pctEl.style.color = scoreColor;
+
+  // Recommendation
+  let reco = '';
+  if (score >= 80) {
+    reco = '✅ <strong>Couleur conforme</strong> à la référence FRITZ. Maintenir les paramètres actuels.';
+  } else if (h > refH + 5 || v > refV + 8) {
+    reco = '🔥 <strong>Produit trop foncé/doré</strong> (H:'+h+'° vs réf:'+refH+'°).<br>→ Recommandation: Réduire la température de friture de 5°C OU réduire le temps de 10–15 secondes.';
+  } else if (h < refH - 5 || v < refV - 8) {
+    reco = '💡 <strong>Produit trop clair/peu cuit</strong> (H:'+h+'° vs réf:'+refH+'°).<br>→ Recommandation: Augmenter la température de friture de 3–5°C OU augmenter le temps de 15–20 secondes.';
+  } else {
+    reco = '⚠ <strong>Score qualité moyen</strong> ('+score+'%). Vérifier l\'homogénéité du lot et la saturation de l\'huile de friture.';
+  }
+  document.getElementById('qual-reco').innerHTML = `<strong>→ RECOMMANDATION :</strong><br>${reco}`;
+
+  // HSV bars
+  document.getElementById('hsv-h').style.width = (h/360*100) + '%';
+  document.getElementById('hsv-s').style.width = s + '%';
+  document.getElementById('hsv-v').style.width = v + '%';
+  document.getElementById('hsv-h-val').textContent = h + '°';
+  document.getElementById('hsv-s-val').textContent = s + '%';
+  document.getElementById('hsv-v-val').textContent = v + '%';
+
+  document.getElementById('qual-time').textContent = new Date().toTimeString().slice(0,5);
+}
+
+function saveQualCheck() {
+  const time = new Date().toTimeString().slice(0,5);
+  const score = document.getElementById('score-pct').textContent;
+  const scoreNum = parseInt(score);
+  const hVal = document.getElementById('hsv-h-val').textContent;
+  const sVal = document.getElementById('hsv-s-val').textContent;
+  const vVal = document.getElementById('hsv-v-val').textContent;
+  const reco = scoreNum >= 80 ? 'Conforme' : scoreNum >= 65 ? '→ Correction légère' : '→ Correction majeure';
+  const badge = scoreNum >= 80 ? 'badge-ok">VALIDÉ' : scoreNum >= 65 ? 'badge-warn">CORRIGÉ' : 'badge-danger">NON-CONF';
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${time}</td><td>#2024-089</td>
+    <td><span style="color:${scoreNum>=80?'var(--green)':scoreNum>=65?'var(--yellow)':'var(--red)'}">${score}</span></td>
+    <td>${hVal}</td><td>${sVal}</td><td>${vVal}</td>
+    <td style="color:var(--text2)">${reco}</td>
+    <td><span class="badge ${badge}</span></td>
+  `;
+  document.getElementById('qual-tbody').prepend(row);
+  STATE.qualChecks++;
+  document.getElementById('qual-count').textContent = STATE.qualChecks + ' contrôles';
+  showToast('✓ Contrôle qualité enregistré', 'ok');
+}
+
+// ==========================================
+// HACCP
+// ==========================================
+function saveHACCP() {
+  const point = document.getElementById('haccp-point').value;
+  const val = document.getElementById('haccp-val').value;
+  const unit = document.getElementById('haccp-unit').value;
+  const action = document.getElementById('haccp-action').value;
+  const op = document.getElementById('haccp-op').value;
+
+  if (!val) { showToast('⚠ Entrez la valeur mesurée', 'warn'); return; }
+
+  const now = new Date();
+  const time = now.toTimeString().slice(0,5);
+
+  // Determine conformity
+  let conforme = true;
+  const numVal = parseFloat(val);
+  if (point.includes('CCP1') && numVal < 90) conforme = false;
+  if (point.includes('CCP2') && (numVal < 170 || numVal > 180)) conforme = false;
+  if (point.includes('CCP3') && numVal > -25) conforme = false;
+  if (point.includes('CCP4') && numVal > -16) conforme = false;
+
+  const badge = conforme ?
+    '<span class="badge badge-ok">CONFORME</span>' :
+    '<span class="badge badge-danger">NON-CONF</span>';
+
+  const limits = {
+    'CCP1': '≥90°C / ≥8min',
+    'CCP2': '170–180°C',
+    'CCP3': '≤-25°C',
+    'CCP4': '≤-16°C',
+    'OPRP1': '<25°C',
+    'OPRP2': '<15°C',
+  };
+  const limitKey = Object.keys(limits).find(k => point.includes(k));
+  const limitStr = limitKey ? limits[limitKey] : '—';
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${time}</td>
+    <td>${point}</td>
+    <td ${!conforme ? 'style="color:var(--red)"' : ''}>${val}${unit}</td>
+    <td>${limitStr}</td>
+    <td>${badge}</td>
+    <td style="color:var(--yellow)">${action || '—'}</td>
+    <td>${op}</td>
+  `;
+  document.getElementById('haccp-tbody').prepend(row);
+  document.getElementById('haccp-last-check').textContent = time;
+
+  ['haccp-val','haccp-action'].forEach(id => document.getElementById(id).value = '');
+  showToast(conforme ? '✓ Contrôle HACCP conforme enregistré' : '⚠ Non-conformité enregistrée — Action corrective requise', conforme ? 'ok' : 'warn');
+}
+
+// ==========================================
+// OPERATORS
+// ==========================================
+function addOperator() {
+  const fname = document.getElementById('op-fname').value.trim();
+  const lname = document.getElementById('op-lname').value.trim();
+  const role = document.getElementById('op-role').value;
+  const station = document.getElementById('op-station-assign').value;
+  const start = document.getElementById('op-start').value;
+  const mat = document.getElementById('op-matricule').value.trim() || 'OP-0' + (STATE.operators+1);
+
+  if (!fname || !lname) { showToast('⚠ Renseignez le prénom et le nom', 'warn'); return; }
+
+  STATE.operators++;
+  const initials = (fname[0] + lname[0]).toUpperCase();
+  const colors = ['#ff6b1a','#00c9ff','#00e676','#a855f7','#ffd600','#ef4444','#14b8a6'];
+  const color = colors[STATE.operators % colors.length];
+
+  const card = document.createElement('div');
+  card.className = 'op-card';
+  card.innerHTML = `
+    <div class="op-avatar" style="background:${color};color:${color==='#ffd600'||color==='#00e676'?'#000':'#fff'}">${initials}</div>
+    <div>
+      <div class="op-name">${fname} ${lname}</div>
+      <div class="op-role">${role} • ${mat}</div>
+      <div class="op-station">📍 ${station} — En attente poste</div>
+      <div class="op-stats">Prise de poste: ${start}</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div class="badge badge-blue">NOUVEAU</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text2);margin-top:4px">Vient d'être ajouté</div>
+    </div>
+  `;
+  document.getElementById('op-list').prepend(card);
+  document.getElementById('op-count-badge').textContent = STATE.operators + ' en poste';
+
+  // Add to production dropdown
+  const prodOp = document.getElementById('prod-op');
+  const opt = document.createElement('option');
+  opt.textContent = `${fname} ${lname.charAt(0)}. — ${station}`;
+  prodOp.appendChild(opt);
+
+  ['op-fname','op-lname','op-matricule'].forEach(id => document.getElementById(id).value = '');
+  showToast(`✓ Opérateur ${fname} ${lname} créé et affecté à ${station}`, 'ok');
+}
+
+// ==========================================
+// TOAST
+// ==========================================
+function showToast(msg, type='ok') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast' + (type==='ok'?' ok-toast':type==='warn'?' warn-toast':'');
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = 'toast-out 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ==========================================
+// EXPORT CSV
+// ==========================================
+function exportCSV() {
+  const rows = [['Heure','Lot','Station','Entrée kg','Sortie kg','Rendement','Perte','Temp °C','Durée','Opérateur','Statut']];
+  document.querySelectorAll('#prod-tbody tr').forEach(tr => {
+    const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim().replace(/,/g,';'));
+    rows.push(cells);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fritz-journal-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ Export CSV téléchargé', 'ok');
+}
+
+// ==========================================
+// SIMULATE LIVE ALERTS
+// ==========================================
+function liveSimulation() {
+  const events = [
+    { delay: 8000, msg: '🚨 Friture FRI-01 → 182°C — Intervention requise!', type:'danger' },
+    { delay: 20000, msg: '⚠ Chambre CF-03 → -15.4°C — Surveillance HACCP', type:'warn' },
+    { delay: 35000, msg: '✓ Blanchiment BL-01 → 92.8°C — Conformité OK', type:'ok' },
+    { delay: 50000, msg: '⚠ Huile friture: acidité élevée — Changer dans 1h', type:'warn' },
+  ];
+  events.forEach(e => setTimeout(() => showToast(e.msg, e.type), e.delay));
+}
+
+// ==========================================
+// INIT
+// ==========================================
+initStations();
+initFlow();
+initRendBars();
+initSparklines();
+updateAlertCount();
+liveSimulation();
+
+// Animate rendement bars on load
+setTimeout(() => {
+  document.querySelectorAll('.rend-fill').forEach(el => {
+    el.style.transition = 'width 1.2s cubic-bezier(0.4,0,0.2,1)';
+  });
+}, 100);
+</script>
+</body>
+</html>
